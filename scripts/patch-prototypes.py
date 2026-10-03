@@ -72,6 +72,11 @@ STORY = [
 ]
 
 GARDEN = [
+    # New numbers every time the game opens: keep the saved level, round and
+    # medals, but start the round fresh with a new random seed (the prototype
+    # reloaded the saved seed, so a child saw the same sums again).
+    ("seed = g('snaily-seed2'); ", "", 1),
+    ("step = g('snaily-step'); }", "step = 0; }", 1),
     # Reduce Motion: no cannon or confetti; Snaily just eats the leaf.
     ("    if (this.state.cannon) { this.celebQ = (this.celebQ || 0) + 1; return; }\n",
      "    if (this.state.cannon) { this.celebQ = (this.celebQ || 0) + 1; return; }\n"

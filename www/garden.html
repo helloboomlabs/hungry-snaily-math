@@ -571,7 +571,7 @@ class Component extends DCLogic {
     let seed = Math.floor(Math.random() * 1e9) + 1, level = 1, round = 0, medals = 0, step = 0;
     try {
       const g = k => +localStorage.getItem(k) || 0;
-      if (g('snaily-seed2') > 0) { seed = g('snaily-seed2'); level = Math.min(LEVELS.length, Math.max(1, g('snaily-level') || 1)); round = g('snaily-round'); medals = g('snaily-medals'); step = g('snaily-step'); }
+      if (g('snaily-seed2') > 0) { level = Math.min(LEVELS.length, Math.max(1, g('snaily-level') || 1)); round = g('snaily-round'); medals = g('snaily-medals'); step = 0; }
     } catch (e) {}
     useRound(seed, level, round);
     if (!(step >= 0 && step < STEPS.length)) step = 0;
