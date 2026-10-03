@@ -116,9 +116,82 @@
     var cfg = window.SNAILY_CONFIG || {};
     return cfg.kidVoiceOnline !== false && navigator.onLine !== false;
   }
-  var KID_RATE = 1.35, curAudio = null, sayToken = 0;
+  var KID_RATE = 1.35;
   function kidUrl(q) { return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q); }
-  function stopSay() { sayToken++; try { speechSynthesis.cancel(); } catch (e) {} if (curAudio) { try { curAudio.pause(); } catch (e) {} curAudio = null; } }
+
+  // Browsers (iPhone/iPad Safari above all) only let a page play sound after
+  // the child has tapped it. One shared <audio> element is "unlocked" on the
+  // first tap and then reused for every line Snaily says. A line that arrives
+  // before the first tap is kept and spoken as soon as the child taps.
+  var kid = { el: null, unlocked: false, pending: null, token: 0, silent: null };
+  function kidEl() {
+    if (!kid.el) { kid.el = new Audio(); kid.el.preload = 'auto'; kid.el.setAttribute('playsinline', ''); }
+    return kid.el;
+  }
+  function silentUrl() {
+    if (kid.silent) return kid.silent;
+    var n = 800, b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
+    var w = function (o, str) { for (var i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true); v.setUint32(28, 16000, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+    kid.silent = URL.createObjectURL(new Blob([b], { type: 'audio/wav' }));
+    return kid.silent;
+  }
+  var unlocking = false;
+  function unlockAudio() {
+    if (kid.unlocked || unlocking) return;
+    unlocking = true;
+    var a = kidEl();
+    var done = function () { unlocking = false; kid.unlocked = true; var f = kid.pending; kid.pending = null; if (f) f(); };
+    try {
+      a.src = silentUrl();
+      var p = a.play();
+      if (p && p.then) p.then(function () { try { a.pause(); } catch (e) {} done(); })
+        .catch(function (e) { if (e && e.name === 'AbortError') done(); else unlocking = false; });
+      else done();
+    } catch (e) { unlocking = false; }
+  }
+  ['touchend', 'pointerup', 'click', 'keydown'].forEach(function (ev) { addEventListener(ev, unlockAudio, true); });
+
+  // Speaks text in the kid voice. cb: {live, start, gap, end, blocked, fail(rest)}
+  function speakKid(t, cb) {
+    cb = cb || {};
+    var my = ++kid.token;
+    var parts = String(t).split(/(?<=[.!?])\s+/).map(function (x) { return x.trim(); }).filter(Boolean), k = 0;
+    var alive = function () { return my === kid.token && (!cb.live || cb.live()); };
+    if (!kid.unlocked) {
+      kid.pending = function () { if (alive()) speakKid(t, cb); };
+      if (cb.blocked) cb.blocked();
+      return;
+    }
+    var a = kidEl();
+    function next() {
+      if (!alive()) return;
+      if (k >= parts.length) { if (cb.end) cb.end(); return; }
+      a.onended = function () { if (!alive()) return; if (cb.gap) cb.gap(); k++; setTimeout(next, 380); };
+      a.onerror = function () { if (!alive()) return; if (cb.fail) cb.fail(parts.slice(k).join(' ')); };
+      a.onplaying = function () { a.playbackRate = KID_RATE; if (cb.start) cb.start(); };
+      a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
+      a.defaultPlaybackRate = KID_RATE; a.playbackRate = KID_RATE;
+      a.src = kidUrl(parts[k]);
+      var p = a.play();
+      if (p && p.catch) p.catch(function (e) {
+        if (!alive()) return;
+        if (e && e.name === 'NotAllowedError') {
+          kid.unlocked = false;
+          kid.pending = function () { if (my === kid.token) next(); };
+          if (cb.blocked) cb.blocked();
+        } else if (!e || e.name !== 'AbortError') a.onerror();
+      });
+    }
+    next();
+  }
+  function stopSay() {
+    kid.token++;
+    try { speechSynthesis.cancel(); } catch (e) {}
+    if (kid.el && !kid.el.paused && !unlocking) { try { kid.el.pause(); } catch (e) {} }
+  }
   function sayDevice(t) {
     try { var u = new SpeechSynthesisUtterance(t), v = anyVoice(); if (v) u.voice = v; u.pitch = 1.65; u.rate = 0.88; speechSynthesis.speak(u); } catch (e) {}
   }
@@ -127,17 +200,7 @@
     stopSay();
     if (!getSettings().voice || !t) return;
     if (!kidVoiceOn()) { sayDevice(t); return; }
-    var parts = t.split(/(?<=[.!?])\s+/).filter(Boolean), k = 0, token = sayToken;
-    (function next() {
-      if (token !== sayToken || k >= parts.length) return;
-      var a = new Audio(); a.preservesPitch = false; a.webkitPreservesPitch = false; a.defaultPlaybackRate = KID_RATE; a.playbackRate = KID_RATE;
-      a.src = kidUrl(parts[k]);
-      a.onended = function () { k++; setTimeout(next, 380); };
-      a.onerror = function () { if (token === sayToken) sayDevice(parts.slice(k).join(' ')); };
-      a.onplay = function () { a.playbackRate = KID_RATE; };
-      curAudio = a;
-      var p = a.play(); if (p && p.catch) p.catch(function (e) { if (!(e && e.name === 'NotAllowedError')) a.onerror(); });
-    })();
+    speakKid(t, { fail: sayDevice });
   }
 
   // iPhone/iPad Safari mutes Web Audio sound effects (cannon, confetti, pops)
@@ -355,7 +418,7 @@
     getSettings: getSettings, setSettings: setSettings, DEFAULTS: DEFAULTS,
     restore: restore, resetProgress: resetProgress,
     vw: vw, vh: vh, insets: insets,
-    anyVoice: anyVoice, fx: fx, buzz: buzz, say: say, stopSay: stopSay, kidVoiceOn: kidVoiceOn, stats: stats, solved: solved,
+    anyVoice: anyVoice, fx: fx, buzz: buzz, say: say, stopSay: stopSay, kidVoiceOn: kidVoiceOn, speakKid: speakKid, stats: stats, solved: solved,
     reduced: function () { return document.documentElement.classList.contains('rm'); },
     parentGate: parentGate, holdButton: holdButton, h: h,
     weekSeconds: weekSeconds, breakUntil: breakUntil, showBreak: showBreak

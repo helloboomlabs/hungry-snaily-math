@@ -19,6 +19,7 @@ SRC = ROOT / "design" / "prototype"
 OUT = ROOT / "www"
 
 HEAD_INCLUDES = (
+    '<meta name="referrer" content="no-referrer">\n'
     '<script src="app/config.js"></script>\n'
     '<link rel="stylesheet" href="app/fonts.css">\n'
     '<link rel="stylesheet" href="app/app.css">\n'
@@ -51,6 +52,7 @@ COMMON = [
     # Snaily's kid voice (as designed): used when online, device voice when offline.
     ("kidOn() { return !this.state.voiceName || this.state.voiceName === '__kid'; }", "kidOn() { return SnailyNative.kidVoiceOn(); }", 1),
     ("|| vs[0] || null", "|| vs[0] || SnailyNative.anyVoice()", 1),
+    ("  stopVoice() { try { speechSynthesis.cancel(); } catch (e) {}", "  stopVoice() { try { speechSynthesis.cancel(); SnailyNative.stopSay(); } catch (e) {}", 1),
     # Haptics + parent settings hook on every sound effect.
     ("  snd(k) {\n", "  snd(k) {\n    try { SnailyNative.fx(k, this, typeof STEPS !== 'undefined' ? STEPS[this.state.step] : null); } catch (e) {}\n", 1),
 ]
@@ -82,10 +84,31 @@ GARDEN = [
 # Regex removals: (pattern, expected_count). Removes the voice pickers so
 # Snaily always uses her one kid voice.
 import re
+# The prototype made a new <audio> per sentence, which iPhone/iPad Safari
+# (and Chrome before the first tap on each page) refuse to play. The kid voice
+# now goes through SnailyNative.speakKid: same voice, one unlocked player.
+KID_SPEAK = '''  speakKid(t) {
+    if (this.engine === 'device') { this.speakDevice(t); return; }
+    const token = {}; this.curU = token; this.speaking = true;
+    const live = () => this.curU === token;
+    SnailyNative.speakKid(t, {
+      live,
+      start: () => { if (live()) this.setState({ talking: true }); },
+      gap: () => { if (live()) this.setState({ talking: false }); },
+      end: () => { if (!live()) return; this.setState({ talking: false }); this.onSpeechEnd(token); },
+      blocked: () => { if (!live()) return; this.speaking = false; this.setState({ talking: false }); if (typeof this.schedule === 'function') this.schedule(); },
+      fail: rest => { if (live()) this.speakDevice(rest); }
+    });
+  }
+'''
+KID_RE = (r'  speakKid\(t\) \{\n.*?(?=  rankVoices\(\) \{)', 1)
+
 STORY_RE = [
+    KID_RE,
     (r'      <div style="[^"]*">Snaily\'s voice</div>\n      <select value="\{\{ voiceName \}\}".*?</select>\n', 1),
 ]
 GARDEN_RE = [
+    KID_RE,
     (r'      <sc-if value="\{\{ hasVoices \}\}".*?</sc-if>\n', 1),
 ]
 
@@ -95,7 +118,7 @@ FORBIDDEN = ["Snaily Story World.dc.html", "Snaily Number Garden.dc.html", "font
 def patch(src_name, dst_name, extra, extra_re=()):
     text = (SRC / src_name).read_text(encoding="utf-8")
     for pat, n in extra_re:
-        text, c = re.subn(pat, "", text, flags=re.S)
+        text, c = re.subn(pat, (lambda m: KID_SPEAK) if pat == KID_RE[0] else "", text, flags=re.S)
         if c != n:
             sys.exit(f"[patch] {src_name}: expected {n} match(es) for regex {pat[:60]!r}, found {c}")
     for old, new, n in COMMON + extra:

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
 <script src="app/config.js"></script>
 <link rel="stylesheet" href="app/fonts.css">
 <link rel="stylesheet" href="app/app.css">
@@ -600,36 +601,21 @@ class Component extends DCLogic {
     addEventListener('keydown', this.onKey);
   }
   componentWillUnmount() { removeEventListener('resize', this.onResize); removeEventListener('keydown', this.onKey); clearTimeout(this.t); this.stopVoice(); }
-  stopVoice() { try { speechSynthesis.cancel(); } catch (e) {} if (this.curAudio) { try { this.curAudio.pause(); } catch (e) {} this.curAudio = null; } }
+  stopVoice() { try { speechSynthesis.cancel(); SnailyNative.stopSay(); } catch (e) {} if (this.curAudio) { try { this.curAudio.pause(); } catch (e) {} this.curAudio = null; } }
   voiceOn() { return !this.state.muted && this.props.voice !== false; }
   kidOn() { return SnailyNative.kidVoiceOn(); }
   speakKid(t) {
     if (this.engine === 'device') { this.speakDevice(t); return; }
-    const rate = 1 + ((this.props.voicePitch ?? 1.7) - 1) * 0.5;
-    const parts = t.split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
     const token = {}; this.curU = token; this.speaking = true;
-    const url = q => 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q);
-    const mk = q => { const a = new Audio(); a.preload = 'auto'; a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.defaultPlaybackRate = rate; a.playbackRate = rate; a.src = url(q); return a; };
-    const auds = parts.map(() => null);
-    let k = 0;
-    const play = (retry) => {
-      if (this.curU !== token) return;
-      if (k >= parts.length) { this.setState({ talking: false }); this.onSpeechEnd(token); return; }
-      const au = auds[k] || mk(parts[k]); auds[k] = au;
-      if (k + 1 < parts.length && !auds[k + 1]) auds[k + 1] = mk(parts[k + 1]);
-      const err = () => {
-        if (this.curU !== token) return;
-        if (!this.engine) { this.engine = 'device'; this.speakDevice(parts.slice(k).join(' ')); return; }
-        if (!retry) { auds[k] = null; setTimeout(() => play(true), 300); return; }
-        k++; play(false);
-      };
-      au.onplay = () => { this.engine = 'kid'; au.playbackRate = rate; this.setState({ talking: true }); };
-      au.onended = () => { this.setState({ talking: false }); k++; setTimeout(() => play(false), 380); };
-      au.onerror = err;
-      this.curAudio = au;
-      const p = au.play(); if (p && p.catch) p.catch(e => { if (e && e.name === 'NotAllowedError') { this.speaking = false; this.setState({ talking: false }); this.schedule(); } else err(); });
-    };
-    play(false);
+    const live = () => this.curU === token;
+    SnailyNative.speakKid(t, {
+      live,
+      start: () => { if (live()) this.setState({ talking: true }); },
+      gap: () => { if (live()) this.setState({ talking: false }); },
+      end: () => { if (!live()) return; this.setState({ talking: false }); this.onSpeechEnd(token); },
+      blocked: () => { if (!live()) return; this.speaking = false; this.setState({ talking: false }); if (typeof this.schedule === 'function') this.schedule(); },
+      fail: rest => { if (live()) this.speakDevice(rest); }
+    });
   }
   rankVoices() {
     const bad = /Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Organ|Trinoids|Whisper|Zarvox|Wobble|Jester|Superstar|Fred|Ralph|Junior|Grandpa|Grandma|Rocko|Eddy|Flo|Reed|Sandy|Shelley/i;
