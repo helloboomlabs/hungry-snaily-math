@@ -1,0 +1,135 @@
+# Builds the iOS app on a GitHub-hosted Mac, signs it, and uploads it to
+# App Store Connect / TestFlight. No Mac needed on your side.
+#
+# One-time setup: see docs/SETUP_GUIDE.md (4 repository secrets).
+# Run it: GitHub > Actions > "iOS build + TestFlight" > Run workflow.
+name: iOS build + TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "App version shown in the App Store (e.g. 1.0.0)"
+        required: true
+        default: "1.0.0"
+      upload:
+        description: "Upload to App Store Connect / TestFlight"
+        type: boolean
+        default: true
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+
+jobs:
+  web-tests:
+    # Quick check of the game in a browser before spending Mac minutes.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm test
+
+  ios:
+    needs: web-tests
+    # Apple requires the iOS 26 SDK (Xcode 26) for uploads. macos-26 ships it.
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      BUNDLE_ID: com.boomlabs.hungrysnaily
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.ASC_KEY_ID }}
+      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.ASC_KEY_P8 }}
+      CERTIFICATE_PRIVATE_KEY: ${{ secrets.CERTIFICATE_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secrets are set
+        run: |
+          missing=0
+          for v in APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_KEY_IDENTIFIER APP_STORE_CONNECT_PRIVATE_KEY CERTIFICATE_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then echo "::error::Secret for $v is not set (see docs/SETUP_GUIDE.md)"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Version numbers
+        id: ver
+        run: |
+          V="${{ github.event.inputs.version }}"
+          if [ -z "$V" ]; then V="${GITHUB_REF_NAME#v}"; fi
+          # Build number must always go up: run number + offset.
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "build=$(( ${{ github.run_number }} + 100 ))" >> "$GITHUB_OUTPUT"
+          echo "Version $V, build $(( ${{ github.run_number }} + 100 ))"
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+          xcodebuild -version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install JS dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle offline assets + check for network use
+        run: |
+          npm run build
+          if grep -q "SET-YOUR-SUPPORT-EMAIL" www/app/config.js; then
+            echo "::error::Set supportEmail in www/app/config.js before releasing"; exit 1
+          fi
+
+      - name: Create iOS project (Capacitor)
+        run: |
+          rm -rf ios
+          npx cap add ios
+          npx cap sync ios
+
+      - name: Configure iOS project (orientation, icons, audio, versions)
+        env:
+          MARKETING_VERSION: ${{ steps.ver.outputs.version }}
+          BUILD_NUMBER: ${{ steps.ver.outputs.build }}
+        run: bash scripts/configure-ios.sh
+
+      - name: Install codemagic-cli-tools (signing helpers)
+        run: pipx install codemagic-cli-tools
+
+      - name: Code signing (App Store distribution)
+        run: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --platform IOS --type IOS_APP_STORE --create \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY
+          keychain add-certificates
+          xcode-project use-profiles --project ios/App/App.xcodeproj
+
+      - name: Build IPA
+        run: |
+          xcode-project build-ipa \
+            --project ios/App/App.xcodeproj \
+            --scheme App \
+            --config Release
+
+      - name: Keep the IPA as a download
+        uses: actions/upload-artifact@v4
+        with:
+          name: HungrySnailyMath-${{ steps.ver.outputs.version }}-${{ steps.ver.outputs.build }}
+          path: build/ios/ipa/*.ipa
+          retention-days: 30
+
+      - name: Upload to App Store Connect (TestFlight)
+        if: github.event_name == 'push' || github.event.inputs.upload == 'true'
+        run: app-store-connect publish --path "build/ios/ipa/*.ipa"
+
+      - name: Clean up keychain
+        if: always()
+        run: keychain use-login || true

@@ -1,0 +1,24 @@
+# Makes App Store screenshots (iPhone 6.9" and iPad 13") with the real font.
+# Run: GitHub > Actions > "Store screenshots" > Run workflow, then download
+# the "store-screenshots" artifact from the finished run.
+name: Store screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-screenshots
+          path: store-screenshots/*.png

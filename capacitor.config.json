@@ -1,0 +1,17 @@
+{
+  "appId": "com.boomlabs.hungrysnaily",
+  "appName": "Snaily Math",
+  "webDir": "www",
+  "backgroundColor": "#faf6ea",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#faf6ea",
+    "scrollEnabled": false,
+    "allowsLinkPreview": false,
+    "limitsNavigationsToAppBoundDomains": false,
+    "preferredContentMode": "mobile"
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": false }
+  }
+}

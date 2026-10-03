@@ -1,0 +1,11 @@
+node_modules/
+ios/
+build/
+store-screenshots/
+www/vendor/*
+!www/vendor/.gitkeep
+*.p8
+*.p12
+*.pem
+CERTIFICATE_PRIVATE_KEY*
+.DS_Store

@@ -1,0 +1,6 @@
+/* Fredoka, bundled with the app (SIL Open Font License). Files are copied
+   from @fontsource/fredoka by scripts/vendor.mjs. No Google Fonts at runtime. */
+@font-face { font-family: 'Fredoka'; font-style: normal; font-display: block; font-weight: 400; src: url('../vendor/fonts/fredoka-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Fredoka'; font-style: normal; font-display: block; font-weight: 500; src: url('../vendor/fonts/fredoka-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Fredoka'; font-style: normal; font-display: block; font-weight: 600; src: url('../vendor/fonts/fredoka-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Fredoka'; font-style: normal; font-display: block; font-weight: 700; src: url('../vendor/fonts/fredoka-latin-700-normal.woff2') format('woff2'); }

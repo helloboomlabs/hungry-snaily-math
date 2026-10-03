@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<script src="app/config.js"></script>
+<link rel="stylesheet" href="app/fonts.css">
+<link rel="stylesheet" href="app/app.css">
+<script src="vendor/capacitor.js"></script>
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="app/native.js"></script>
+<script src="support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hungry Snaily">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f8f4e6">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:oklch(0.975 0.018 95);overscroll-behavior:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
+a{color:oklch(0.5 0.12 150);} a:hover{color:oklch(0.4 0.12 150);}
+button{font-family:inherit;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 oklch(0.86 0.16 95 / .9)}50%{box-shadow:0 0 0 9px oklch(0.86 0.16 95 / 0)}}
+@keyframes glow{50%{filter:brightness(1.15)}}
+@keyframes burst{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}70%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1) rotate(var(--r));opacity:0}}
+@keyframes hopA{0%{transform:translateY(0)}35%{transform:translateY(-50px)}70%{transform:translateY(0)}85%{transform:translateY(-8px)}100%{transform:translateY(0)}}
+@keyframes hopB{0%{transform:translateY(0)}35%{transform:translateY(-50px)}70%{transform:translateY(0)}85%{transform:translateY(-8px)}100%{transform:translateY(0)}}
+@keyframes joyA{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-24px) rotate(-6deg)}60%{transform:translateY(0) rotate(4deg)}}
+@keyframes joyB{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-24px) rotate(-6deg)}60%{transform:translateY(0) rotate(4deg)}}
+@keyframes nudge{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
+@keyframes cannonRoll{0%{transform:translateX(-400px)}22%{transform:translateX(0)}78%{transform:translateX(0)}100%{transform:translateX(-400px)}}
+@keyframes cannonRollR{0%{transform:translateX(560px)}22%{transform:translateX(0)}78%{transform:translateX(0)}100%{transform:translateX(560px)}}
+@keyframes wheelSpin{0%{transform:rotate(0)}22%{transform:rotate(600deg)}78%{transform:rotate(600deg)}100%{transform:rotate(0)}}
+@keyframes kick{0%,32%{transform:rotate(-38deg) translateX(0)}35%{transform:rotate(-33deg) translateX(-16px)}50%,100%{transform:rotate(-38deg) translateX(0)}}
+@keyframes flash{0%,33%{transform:translate(-50%,-50%) scale(0);opacity:0}35%{opacity:1;transform:translate(-50%,-50%) scale(1)}48%,100%{transform:translate(-50%,-50%) scale(2);opacity:0}}
+@keyframes confetti{0%{transform:translate(0,0) rotate(0);opacity:0;animation-timing-function:cubic-bezier(.2,.7,.4,1)}3%{opacity:1}40%{transform:translate(var(--x1),var(--y1)) rotate(calc(var(--r) * .4));animation-timing-function:cubic-bezier(.5,0,.8,.6)}85%{opacity:1}100%{transform:translate(var(--x2),var(--y2)) rotate(var(--r));opacity:0}}
+@keyframes talk{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+@keyframes chomp{0%,100%{transform:scaleY(.15)}50%{transform:scaleY(1.15)}}
+@keyframes heart{0%{transform:translateY(10px) scale(.6);opacity:0}25%{opacity:1}100%{transform:translateY(-40px) scale(1.1);opacity:0}}
+@keyframes feed{0%{transform:translate(-50%,-50%) scale(1.4) rotate(0);opacity:1}45%{transform:translate(calc(-50% + var(--mx)),calc(-50% + var(--my))) scale(1.6) rotate(200deg)}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.5) rotate(400deg);opacity:1}}
+@keyframes bite{0%{transform:translate(-50%,-50%) scale(1) rotate(-20deg)}100%{transform:translate(-50%,-50%) scale(0) rotate(-20deg)}}
+@keyframes nom{0%{transform:scale(0) rotate(-8deg);opacity:0}15%{transform:scale(1.15) rotate(4deg);opacity:1}30%{transform:scale(1) rotate(0)}85%{opacity:1}100%{transform:translateY(-14px);opacity:0}}
+@keyframes toiletIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+@keyframes toiletOut{0%{transform:scale(1)}100%{transform:scale(0);opacity:0}}
+@keyframes medalPop{0%{transform:translate(-50%,-50%) scale(0) rotate(-30deg)}18%{transform:translate(-50%,-50%) scale(1.15) rotate(8deg)}28%{transform:translate(-50%,-50%) scale(1) rotate(0)}80%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-90%) scale(.5);opacity:0}}
+@keyframes cannonIn{0%{transform:translateX(1050px)}100%{transform:translateX(0)}}
+@keyframes cannonOut{0%{transform:translateX(0)}100%{transform:translateX(1100px)}}
+@keyframes spinIn{0%{transform:rotate(1000deg)}100%{transform:rotate(0)}}
+@keyframes spinOut{0%{transform:rotate(0)}100%{transform:rotate(1000deg)}}
+@keyframes kick2{0%{transform:rotate(-55deg) translateX(0)}30%{transform:rotate(-49deg) translateX(-18px)}100%{transform:rotate(-55deg) translateX(0)}}
+@keyframes spark{0%{transform:translate(0,0)}100%{transform:translate(9px,20px) scale(.6)}}
+@keyframes flicker{50%{opacity:.55}}
+@keyframes flash2{0%{transform:translate(-50%,-50%) scale(0);opacity:0}12%{opacity:1;transform:translate(-50%,-50%) scale(1)}45%,100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+@keyframes lob{0%{transform:translate(-50%,-50%) scale(.6) rotate(0);animation-timing-function:cubic-bezier(.2,.7,.4,1)}50%{transform:translate(calc(-50% + var(--mx)),calc(-50% + var(--my))) scale(1.5) rotate(260deg);animation-timing-function:cubic-bezier(.6,0,.8,.4)}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1) rotate(520deg)}}
+@keyframes turn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+</style>
+</helmet>
+<div style="position:fixed;top:var(--sa-t);right:var(--sa-r);bottom:var(--sa-b);left:var(--sa-l);overflow:hidden;font-family:'Fredoka',system-ui,sans-serif;color:oklch(0.3 0.04 150);user-select:none;-webkit-user-select:none;">
+<div style="{{ stageStyle }}">
+
+  <div style="{{ hill1 }}"></div>
+  <div style="{{ hill2 }}"></div>
+  <div style="{{ leafDeco1 }}"></div>
+  <div style="{{ leafDeco2 }}"></div>
+  <div style="position:absolute;left:-30px;top:-30px;width:80px;height:80px;border-radius:50% 0;background:oklch(0.87 0.08 135);transform:rotate(-10deg);"></div>
+
+  <div style="position:absolute;left:40px;top:18px;display:flex;flex-direction:column;gap:0;">
+    <div style="font-size:26px;font-weight:700;color:oklch(0.42 0.11 150);letter-spacing:.2px;">Hungry Snaily Math</div>
+    <div style="font-size:18px;font-weight:500;color:oklch(0.45 0.05 150);">{{ sceneName }}</div>
+  </div>
+
+  <a href="index.html" title="Home" aria-label="Home" style="position:absolute;left:720px;top:20px;width:100px;height:52px;border-radius:26px;background:oklch(0.72 0.14 145);box-shadow:0 3px 0 oklch(0.55 0.12 150);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;text-decoration:none;">‹ Home</a>
+  <div style="position:absolute;left:430px;top:18px;width:280px;height:56px;display:flex;align-items:center;gap:8px;overflow:hidden;">
+    <div style="font-size:17px;font-weight:600;color:oklch(0.45 0.06 150);">Medals</div>
+    <sc-for list="{{ medalIcons }}" as="md" hint-placeholder-count="0">
+      <div style="position:relative;width:30px;height:42px;flex:none;">
+        <div style="position:absolute;left:6px;top:0;width:8px;height:20px;background:oklch(0.66 0.16 25);transform:skewX(14deg);"></div>
+        <div style="position:absolute;left:16px;top:0;width:8px;height:20px;background:oklch(0.6 0.12 240);transform:skewX(-14deg);"></div>
+        <div style="position:absolute;left:1px;top:13px;width:28px;height:28px;box-sizing:border-box;border-radius:50%;background:oklch(0.85 0.14 88);border:3px solid oklch(0.7 0.13 70);"></div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ moreMedals }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:20px;font-weight:700;color:oklch(0.5 0.1 70);">{{ moreMedalsTxt }}</div>
+    </sc-if>
+    <sc-if value="{{ noMedals }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:16px;font-weight:500;line-height:1.1;color:oklch(0.5 0.04 150);">Fill the tummy to earn one!</div>
+    </sc-if>
+  </div>
+  <div title="Snaily's tummy" style="position:absolute;left:836px;top:18px;width:310px;height:56px;box-sizing:border-box;padding:0 14px;border-radius:28px;background:#fff;box-shadow:0 3px 0 oklch(0.85 0.04 130);display:flex;align-items:center;gap:10px;">
+    <div style="font-size:17px;font-weight:600;color:oklch(0.45 0.06 150);line-height:1;">Tummy</div>
+    <div style="flex:1;display:flex;justify-content:space-between;align-items:center;">
+      <sc-for list="{{ tummy }}" as="tm" hint-placeholder-count="11">
+        <div style="{{ tm.style }}"></div>
+      </sc-for>
+    </div>
+  </div>
+  <button onClick="{{ toggleSound }}" title="Sound" style="position:absolute;left:1162px;top:20px;width:52px;height:52px;border-radius:50%;border:none;background:#fff;box-shadow:0 3px 0 oklch(0.85 0.04 130);font-size:24px;font-weight:600;color:oklch(0.42 0.11 150);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+    <span style="{{ soundIconStyle }}">♪</span>
+  </button>
+
+  <sc-if value="{{ isIntro }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;left:40px;top:110px;width:1200px;height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;">
+      <div style="display:flex;gap:18px;align-items:flex-end;margin-bottom:8px;">
+        <div style="width:84px;height:84px;box-sizing:border-box;border:2px solid oklch(0.64 0.14 55);border-radius:5px;background:repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),repeating-linear-gradient(90deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),oklch(0.82 0.12 70);"></div>
+        <div style="width:20px;height:84px;box-sizing:border-box;border:2px solid oklch(0.56 0.11 240);border-radius:5px;background:repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.16) 7px 8px),oklch(0.8 0.09 230);"></div>
+        <div style="width:22px;height:22px;box-sizing:border-box;border:2px solid oklch(0.6 0.13 148);border-radius:6px;background:oklch(0.82 0.13 140);"></div>
+      </div>
+      <div style="font-size:76px;font-weight:700;line-height:1;color:oklch(0.42 0.11 150);">Snaily is hungry!</div>
+      <div style="font-size:30px;font-weight:500;color:oklch(0.4 0.05 150);max-width:820px;text-wrap:pretty;">Solve 3-digit adding and taking away puzzles to earn leaves. Feed Snaily until her tummy is full!</div>
+      <button onClick="{{ start }}" style="margin-top:14px;padding:0 54px;height:84px;border-radius:42px;border:none;background:oklch(0.72 0.14 145);color:#fff;font-size:38px;font-weight:700;cursor:pointer;box-shadow:0 7px 0 oklch(0.55 0.12 150);animation:breathe 1.8s ease-in-out infinite;">Let's feed Snaily!</button>
+      <sc-if value="{{ hasVoices }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;margin-top:6px;font-size:20px;font-weight:500;color:oklch(0.42 0.05 150);">
+          <div>Snaily's voice</div>
+          <select value="{{ voiceName }}" onChange="{{ pickVoiceName }}" style="height:44px;max-width:340px;padding:0 14px;border-radius:22px;border:2px solid oklch(0.88 0.04 130);background:#fff;font-family:inherit;font-size:18px;color:oklch(0.35 0.05 150);cursor:pointer;">
+            <sc-for list="{{ voiceOpts }}" as="vo" hint-placeholder-count="0">
+              <option value="{{ vo.name }}">{{ vo.label }}</option>
+            </sc-for>
+          </select>
+          <button onClick="{{ testVoice }}" style="height:44px;padding:0 18px;border-radius:22px;border:none;background:#fff;box-shadow:0 3px 0 oklch(0.85 0.04 130);font-size:18px;font-weight:600;color:oklch(0.42 0.11 150);cursor:pointer;">Listen</button>
+        </div>
+      </sc-if>
+      <a href="story.html" style="margin-top:4px;height:52px;padding:0 28px;border-radius:26px;background:#fff;box-shadow:0 4px 0 oklch(0.85 0.04 130);display:flex;align-items:center;font-size:22px;font-weight:700;color:oklch(0.42 0.11 150);text-decoration:none;">Story Garden: word problems ›</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isBoard }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:6px;top:84px;width:80px;height:410px;">
+      <div style="position:absolute;left:4px;top:110px;width:72px;height:40px;border-radius:20px;background:oklch(0.82 0.12 70);border:2px solid oklch(0.64 0.14 55);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:oklch(0.32 0.06 50);">{{ chipA }}</div>
+      <sc-if value="{{ showB }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:20px;top:214px;width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:oklch(0.42 0.11 150);">+</div>
+        <div style="position:absolute;left:4px;top:300px;width:72px;height:40px;border-radius:20px;background:oklch(0.8 0.09 230);border:2px solid oklch(0.56 0.11 240);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:oklch(0.3 0.06 245);">{{ chipB }}</div>
+      </sc-if>
+    </div>
+    <div ref="{{ boardRef }}" style="position:absolute;left:90px;top:84px;width:855px;height:410px;">
+      <sc-for list="{{ panels }}" as="pn" hint-placeholder-count="3">
+        <div style="{{ pn.style }}">
+          <div style="position:absolute;left:0;right:0;top:10px;text-align:center;font-size:24px;font-weight:600;color:oklch(0.38 0.06 150);">{{ pn.label }}</div>
+          <sc-if value="{{ pn.divider }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:16px;right:16px;top:232px;border-top:3px dashed oklch(0.88 0.03 110);"></div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-for list="{{ pieces }}" as="p" hint-placeholder-count="0">
+        <div style="{{ p.style }}"></div>
+      </sc-for>
+      <sc-if value="{{ hasDragBox }}" hint-placeholder-val="{{ false }}">
+        <div onPointerDown="{{ dragStart }}" style="{{ dragBoxStyle }}">
+          <div style="position:absolute;left:50%;top:-46px;transform:translateX(-50%);white-space:nowrap;padding:6px 16px;border-radius:20px;background:oklch(0.86 0.16 95);color:oklch(0.3 0.06 80);font-size:22px;font-weight:700;animation:nudge 1.2s ease-in-out infinite;">{{ dragLabel }}</div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLine }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:40px;top:96px;width:905px;text-align:center;font-size:60px;font-weight:700;color:oklch(0.35 0.05 150);">{{ lineEq }}</div>
+    <div style="position:absolute;left:70px;top:430px;width:850px;height:6px;border-radius:3px;background:oklch(0.42 0.06 150);"></div>
+    <sc-for list="{{ ticks }}" as="tk" hint-placeholder-count="0">
+      <div style="{{ tk.style }}"></div>
+      <sc-if value="{{ tk.big }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ tk.labStyle }}">{{ tk.lab }}</div>
+      </sc-if>
+    </sc-for>
+    <sc-for list="{{ arcs }}" as="ar" hint-placeholder-count="0">
+      <div style="{{ ar.style }}"></div>
+      <div style="{{ ar.labStyle }}">{{ ar.lab }}</div>
+    </sc-for>
+    <div style="{{ miniStyle }}">
+      <div style="{{ hopStyle }}">
+        <div style="position:relative;width:150px;height:120px;transform:scale(.45);transform-origin:0 0;">
+          <div style="position:absolute;left:0;top:78px;width:150px;height:38px;border-radius:20px 26px 16px 16px;background:oklch(0.88 0.09 100);box-shadow:inset 0 -6px 0 oklch(0.8 0.1 100);"></div>
+          <div style="position:absolute;left:104px;top:46px;width:44px;height:64px;border-radius:22px 22px 14px 14px;background:oklch(0.88 0.09 100);"></div>
+          <div style="position:absolute;left:112px;top:20px;width:6px;height:34px;border-radius:3px;background:oklch(0.85 0.09 100);transform:rotate(-12deg);"></div>
+          <div style="position:absolute;left:132px;top:18px;width:6px;height:34px;border-radius:3px;background:oklch(0.85 0.09 100);transform:rotate(10deg);"></div>
+          <div style="position:absolute;left:100px;top:4px;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid oklch(0.8 0.1 100);display:flex;align-items:center;justify-content:center;"><div style="width:10px;height:10px;border-radius:50%;background:oklch(0.28 0.03 150);"></div></div>
+          <div style="position:absolute;left:126px;top:0px;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid oklch(0.8 0.1 100);display:flex;align-items:center;justify-content:center;"><div style="width:10px;height:10px;border-radius:50%;background:oklch(0.28 0.03 150);"></div></div>
+          <div style="position:absolute;left:14px;top:2px;width:90px;height:90px;border-radius:50%;background:oklch(0.82 0.11 55);box-shadow:0 4px 0 oklch(0.64 0.13 35);"><svg width="90" height="90" viewBox="0 0 92 92" style="display:block;"><path d="M46 46 A6 6 0 0 1 58 46 A12 12 0 0 1 34 46 A18 18 0 0 1 70 46 A24 24 0 0 1 22 46 A30 30 0 0 1 82 46" fill="none" stroke="oklch(0.62 0.15 32)" stroke-width="6" stroke-linecap="round"></path></svg></div>
+          <div style="position:absolute;left:118px;top:70px;width:18px;height:9px;border-bottom:3px solid oklch(0.28 0.03 150);border-radius:0 0 12px 12px;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="{{ posChipStyle }}">{{ linePos }}</div>
+  </sc-if>
+
+  <sc-if value="{{ isLevel }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:40px;top:110px;width:1200px;height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;">
+      <div style="font-size:100px;font-weight:700;line-height:1;color:oklch(0.42 0.11 150);">{{ levelBig }}</div>
+      <div style="font-size:42px;font-weight:600;color:oklch(0.52 0.12 70);">{{ levelSub }}</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showCard }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:968px;top:84px;width:272px;box-sizing:border-box;padding:16px 10px;background:#fff;border-radius:26px;box-shadow:0 5px 0 oklch(0.88 0.04 130);display:flex;justify-content:center;">
+      <sc-if value="{{ showTop }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;align-items:center;width:40px;">
+          <div style="height:22px;"></div>
+          <div style="height:30px;"></div>
+          <div style="height:58px;"></div>
+          <div style="height:58px;font-size:46px;font-weight:600;line-height:58px;color:oklch(0.35 0.05 150);">{{ op }}</div>
+          <div style="height:6px;width:100%;border-radius:3px;background:oklch(0.35 0.05 150);"></div>
+          <div style="height:64px;"></div>
+        </div>
+      </sc-if>
+      <sc-for list="{{ cardCols }}" as="cc" hint-placeholder-count="3">
+        <div style="{{ cc.stackStyle }}">
+          <div style="height:22px;font-size:15px;font-weight:600;letter-spacing:1px;color:oklch(0.55 0.04 150);">{{ cc.lab }}</div>
+          <sc-if value="{{ showTop }}" hint-placeholder-val="{{ true }}">
+            <div style="height:30px;font-size:24px;font-weight:700;line-height:30px;color:oklch(0.5 0.13 150);">{{ cc.mark }}</div>
+            <div style="{{ cc.topStyle }}">{{ cc.top }}</div>
+            <div style="{{ cc.botStyle }}">{{ cc.bot }}</div>
+            <div style="height:6px;width:100%;background:oklch(0.35 0.05 150);"></div>
+          </sc-if>
+          <div style="{{ cc.ansStyle }}">{{ cc.ans }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ padSide }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ padSideBox }}">
+      <sc-for list="{{ padKeys }}" as="k" hint-placeholder-count="10">
+        <button onClick="{{ k.on }}" style="height:84px;border-radius:22px;border:none;background:#fff;box-shadow:0 5px 0 oklch(0.85 0.05 130);font-size:42px;font-weight:700;color:oklch(0.38 0.08 150);cursor:pointer;touch-action:manipulation;" style-active="transform:translateY(4px);box-shadow:0 1px 0 oklch(0.85 0.05 130);">{{ k.d }}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ padBottom }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ padBottomBox }}">
+      <sc-for list="{{ padKeys }}" as="k" hint-placeholder-count="10">
+        <button onClick="{{ k.on }}" style="width:94px;height:94px;border-radius:24px;border:none;background:#fff;box-shadow:0 6px 0 oklch(0.85 0.05 130);font-size:46px;font-weight:700;color:oklch(0.38 0.08 150);cursor:pointer;touch-action:manipulation;" style-active="transform:translateY(4px);box-shadow:0 1px 0 oklch(0.85 0.05 130);">{{ k.d }}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ padRow }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:200px;top:540px;width:1060px;height:172px;box-sizing:border-box;padding:12px 18px;z-index:35;background:#fff;border-radius:30px;box-shadow:0 5px 0 oklch(0.85 0.05 130);display:flex;flex-direction:column;gap:10px;">
+      <sc-if value="{{ hasHint }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:24px;top:-50px;max-width:1000px;padding:8px 18px;border-radius:20px;background:oklch(0.9 0.08 40);color:oklch(0.35 0.1 35);font-size:24px;font-weight:600;box-shadow:0 3px 0 oklch(0.82 0.08 40);">{{ hint }}</div>
+      </sc-if>
+      <div style="font-size:26px;font-weight:600;line-height:1.2;color:oklch(0.32 0.04 150);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ say }}</div>
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <sc-for list="{{ padKeys }}" as="k" hint-placeholder-count="10">
+          <button onClick="{{ k.on }}" style="flex:1;height:96px;border-radius:22px;border:none;background:oklch(0.96 0.03 120);box-shadow:0 5px 0 oklch(0.86 0.05 130);font-size:46px;font-weight:700;color:oklch(0.38 0.08 150);cursor:pointer;touch-action:manipulation;" style-active="transform:translateY(4px);box-shadow:0 1px 0 oklch(0.86 0.05 130);">{{ k.d }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ padNormal }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:968px;top:388px;width:272px;display:flex;flex-direction:column;gap:7px;">
+      <div style="display:grid;grid-template-columns:repeat(5,48px);gap:7px;justify-content:center;">
+        <sc-for list="{{ pad }}" as="k" hint-placeholder-count="10">
+          <button onClick="{{ k.on }}" style="width:48px;height:48px;border-radius:14px;border:none;background:#fff;box-shadow:0 4px 0 oklch(0.85 0.05 130);font-size:28px;font-weight:700;color:oklch(0.38 0.08 150);cursor:pointer;" style-active="transform:translateY(3px);box-shadow:0 1px 0 oklch(0.85 0.05 130);">{{ k.d }}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ showErase }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ erase }}" style="align-self:center;height:36px;padding:0 18px;border-radius:18px;border:none;background:oklch(0.95 0.02 120);font-size:18px;font-weight:600;color:oklch(0.45 0.05 150);cursor:pointer;">erase</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  {{ toiletLayer }}
+  <sc-if value="{{ showThought }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:96px;top:532px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 2px 0 oklch(0.85 0.05 130);"></div>
+    <div style="position:absolute;left:76px;top:516px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 2px 0 oklch(0.85 0.05 130);"></div>
+    <div style="position:absolute;left:12px;top:446px;width:70px;height:62px;border-radius:50%;background:#fff;box-shadow:0 3px 0 oklch(0.85 0.05 130);display:flex;align-items:center;justify-content:center;animation:breathe 1.6s ease-in-out infinite;">
+      <div style="width:30px;height:30px;border-radius:0 50%;background:oklch(0.72 0.14 145);box-shadow:inset -3px -3px 0 oklch(0.6 0.13 150);"></div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isFull }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:30px;top:500px;font-size:30px;color:oklch(0.72 0.16 15);animation:heart 2.2s ease-in-out infinite;">♥</div>
+    <div style="position:absolute;left:150px;top:490px;font-size:24px;color:oklch(0.76 0.14 15);animation:heart 2.2s ease-in-out .8s infinite;">♥</div>
+    <div style="position:absolute;left:96px;top:470px;font-size:20px;color:oklch(0.72 0.16 15);animation:heart 2.2s ease-in-out 1.5s infinite;">♥</div>
+  </sc-if>
+  <div style="{{ snailWrap }}">
+    <div style="position:relative;width:150px;height:120px;animation:bob 2.6s ease-in-out infinite;">
+      <div style="position:absolute;left:0;top:78px;width:150px;height:38px;border-radius:20px 26px 16px 16px;background:oklch(0.88 0.09 100);box-shadow:inset 0 -6px 0 oklch(0.8 0.1 100);"></div>
+      <div style="position:absolute;left:104px;top:46px;width:44px;height:64px;border-radius:22px 22px 14px 14px;background:oklch(0.88 0.09 100);"></div>
+      <div style="position:absolute;left:112px;top:20px;width:6px;height:34px;border-radius:3px;background:oklch(0.85 0.09 100);transform:rotate(-12deg);"></div>
+      <div style="position:absolute;left:132px;top:18px;width:6px;height:34px;border-radius:3px;background:oklch(0.85 0.09 100);transform:rotate(10deg);"></div>
+      <div style="position:absolute;left:100px;top:4px;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid oklch(0.8 0.1 100);display:flex;align-items:center;justify-content:center;"><div style="width:10px;height:10px;border-radius:50%;background:oklch(0.28 0.03 150);animation:blink 4s infinite;"></div></div>
+      <div style="position:absolute;left:126px;top:0px;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid oklch(0.8 0.1 100);display:flex;align-items:center;justify-content:center;"><div style="width:10px;height:10px;border-radius:50%;background:oklch(0.28 0.03 150);animation:blink 4s infinite;"></div></div>
+      <div style="position:absolute;left:14px;top:2px;width:90px;height:90px;border-radius:50%;background:oklch(0.82 0.11 55);box-shadow:inset -6px -8px 0 rgba(120,40,0,.12),0 4px 0 oklch(0.64 0.13 35);"><svg width="90" height="90" viewBox="0 0 92 92" style="display:block;"><path d="M46 46 A6 6 0 0 1 58 46 A12 12 0 0 1 34 46 A18 18 0 0 1 70 46 A24 24 0 0 1 22 46 A30 30 0 0 1 82 46" fill="none" stroke="oklch(0.62 0.15 32)" stroke-width="6" stroke-linecap="round"></path></svg></div>
+      <div style="{{ mouthStyle }}"></div>
+      <div style="position:absolute;left:106px;top:68px;width:10px;height:7px;border-radius:50%;background:oklch(0.82 0.09 15);"></div>
+      <div style="position:absolute;left:138px;top:68px;width:8px;height:7px;border-radius:50%;background:oklch(0.82 0.09 15);"></div>
+    </div>
+    {{ munchLeaf }}
+  </div>
+
+  <div style="{{ bubbleFade }}">
+  <div style="position:absolute;left:214px;top:546px;width:740px;min-height:132px;box-sizing:border-box;padding:20px 30px;background:#fff;border-radius:32px;box-shadow:0 5px 0 oklch(0.85 0.05 130);display:flex;align-items:center;">
+    <div style="position:absolute;left:-12px;top:62px;width:28px;height:28px;background:#fff;transform:rotate(45deg);border-radius:4px;"></div>
+    <sc-if value="{{ hasHint }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:28px;top:-24px;padding:6px 16px;border-radius:18px;background:oklch(0.9 0.08 40);color:oklch(0.35 0.1 35);font-size:20px;font-weight:600;max-width:660px;">{{ hint }}</div>
+    </sc-if>
+    <div style="position:relative;font-size:31px;font-weight:500;line-height:1.3;text-wrap:pretty;">{{ say }}</div>
+  </div>
+  </div>
+
+  <sc-if value="{{ showControls }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:992px;top:566px;display:flex;align-items:center;gap:12px;">
+    <button onClick="{{ back }}" title="Back" style="width:68px;height:68px;border-radius:50%;border:none;background:#fff;box-shadow:0 4px 0 oklch(0.85 0.05 130);font-size:30px;font-weight:700;color:oklch(0.42 0.11 150);cursor:pointer;">‹</button>
+    <button onClick="{{ togglePlay }}" title="Play / pause" style="{{ playBtnStyle }}">
+      <sc-if value="{{ playing }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:8px;"><div style="width:9px;height:30px;border-radius:3px;background:#fff;"></div><div style="width:9px;height:30px;border-radius:3px;background:#fff;"></div></div>
+      </sc-if>
+      <sc-if value="{{ paused }}" hint-placeholder-val="{{ true }}">
+        <div style="width:0;height:0;margin-left:8px;border-top:17px solid transparent;border-bottom:17px solid transparent;border-left:28px solid #fff;"></div>
+      </sc-if>
+    </button>
+    <button onClick="{{ next }}" title="Next" style="width:68px;height:68px;border-radius:50%;border:none;background:#fff;box-shadow:0 4px 0 oklch(0.85 0.05 130);font-size:30px;font-weight:700;color:oklch(0.42 0.11 150);cursor:pointer;">›</button>
+  </div>
+  </sc-if>
+
+  {{ cannonLayer }}
+  {{ feedLayer }}
+  {{ burstLayer }}
+  {{ medalLayer }}
+
+  <sc-if value="{{ showChoice }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:80;background:oklch(0.975 0.018 95 / .9);display:flex;align-items:center;justify-content:center;">
+      <div style="width:660px;box-sizing:border-box;background:#fff;border-radius:36px;padding:38px 44px;box-shadow:0 8px 0 oklch(0.88 0.04 130);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;">
+        <div style="font-size:50px;font-weight:700;line-height:1.1;color:oklch(0.42 0.11 150);">{{ choiceTitle }}</div>
+        <div style="font-size:24px;font-weight:500;color:oklch(0.42 0.05 150);margin-bottom:6px;">What do you want to do next?</div>
+        <button onClick="{{ keepLevel }}" style="width:100%;min-height:74px;padding:10px 24px;box-sizing:border-box;border-radius:37px;font-size:27px;font-weight:700;cursor:pointer;border:none;background:oklch(0.95 0.04 130);color:oklch(0.38 0.1 150);box-shadow:0 5px 0 oklch(0.86 0.05 130);">{{ keepLabel }}</button>
+        <sc-if value="{{ canNext }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ nextLevel }}" style="width:100%;min-height:74px;padding:10px 24px;box-sizing:border-box;border-radius:37px;font-size:27px;font-weight:700;cursor:pointer;border:none;background:oklch(0.72 0.14 145);color:#fff;box-shadow:0 5px 0 oklch(0.55 0.12 150);">{{ nextLabel }}</button>
+        </sc-if>
+        <button onClick="{{ finish }}" style="width:100%;min-height:74px;padding:10px 24px;box-sizing:border-box;border-radius:37px;font-size:27px;font-weight:700;cursor:pointer;border:3px solid oklch(0.9 0.04 130);background:#fff;color:oklch(0.42 0.06 150);">Finish and see my medals</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showFinish }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:80;background:oklch(0.975 0.018 95 / .94);display:flex;align-items:center;justify-content:center;">
+      <div style="width:820px;box-sizing:border-box;background:#fff;border-radius:36px;padding:40px 48px;box-shadow:0 8px 0 oklch(0.88 0.04 130);display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;">
+        <div style="font-size:56px;font-weight:700;line-height:1.1;color:oklch(0.42 0.11 150);">{{ finishTitle }}</div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:700px;">
+          <sc-for list="{{ medalBig }}" as="mb" hint-placeholder-count="2">
+          <div style="position:relative;width:60px;height:84px;flex:none;">
+            <div style="position:absolute;left:14px;top:0;width:14px;height:40px;background:oklch(0.66 0.16 25);transform:skewX(14deg);"></div>
+            <div style="position:absolute;left:32px;top:0;width:14px;height:40px;background:oklch(0.6 0.12 240);transform:skewX(-14deg);"></div>
+            <div style="position:absolute;left:2px;top:26px;width:56px;height:56px;box-sizing:border-box;border-radius:50%;background:oklch(0.85 0.14 88);border:5px solid oklch(0.7 0.13 70);display:flex;align-items:center;justify-content:center;"><div style="width:22px;height:22px;border-radius:0 50%;background:oklch(0.66 0.14 145);"></div></div>
+          </div>
+          </sc-for>
+        </div>
+        <div style="font-size:26px;font-weight:500;color:oklch(0.42 0.05 150);">Snaily says thank you for all the yummy leaves!</div>
+        <div style="display:flex;gap:16px;width:100%;">
+          <button onClick="{{ closeFinish }}" style="width:100%;min-height:74px;padding:10px 24px;box-sizing:border-box;border-radius:37px;font-size:27px;font-weight:700;cursor:pointer;flex:1;border:none;background:oklch(0.72 0.14 145);color:#fff;box-shadow:0 5px 0 oklch(0.55 0.12 150);">Keep playing</button>
+          <button onClick="{{ startOver }}" style="width:100%;min-height:74px;padding:10px 24px;box-sizing:border-box;border-radius:37px;font-size:27px;font-weight:700;cursor:pointer;flex:1;border:3px solid oklch(0.9 0.04 130);background:#fff;color:oklch(0.42 0.06 150);">Start over</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+<sc-if value="{{ portrait }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:100;background:oklch(0.975 0.018 95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:32px;box-sizing:border-box;text-align:center;">
+    <div style="width:84px;height:140px;box-sizing:border-box;border-radius:18px;border:8px solid oklch(0.5 0.12 150);background:oklch(0.92 0.06 135);animation:turn 2.4s ease-in-out infinite;"></div>
+    <div style="font-size:32px;font-weight:700;color:oklch(0.42 0.11 150);">Turn your screen sideways</div>
+    <div style="font-size:20px;font-weight:500;color:oklch(0.42 0.05 150);max-width:320px;">Snaily needs lots of room to play!</div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;speed&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;slow&quot;,&quot;normal&quot;,&quot;fast&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;'slow'|'normal'|'fast'&quot;},&quot;autoAdvance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;sound&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;voice&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;voicePitch&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:1,&quot;max&quot;:2,&quot;step&quot;:0.05,&quot;default&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+const COLW = 285, ZA = 52, ZB = 240, KEYS = ['h', 't', 'o'];
+const PAL = { A: ['oklch(0.82 0.12 70)', 'oklch(0.64 0.14 55)'], B: ['oklch(0.8 0.09 230)', 'oklch(0.56 0.11 240)'], G: ['oklch(0.82 0.13 140)', 'oklch(0.6 0.13 148)'] };
+const DIM = { h: [84, 84], t: [20, 84], o: [22, 22] };
+const SUN = 'oklch(0.86 0.16 95)', RED = 'oklch(0.7 0.17 25)', INK = 'oklch(0.32 0.04 150)';
+const SCENES = ['Hello', 'Meet the blocks', 'Adding', 'Hop along', 'Adding with a trade', 'Taking away', 'Taking away with a trade', 'Garden star'];
+const SPEED = { slow: 0.75, normal: 1, fast: 1.35 };
+const dg = n => [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10];
+const slot = (k, ci, zy, i) => {
+  const x = ci * COLW;
+  if (k === 'h') return [x + 14 + (i % 3) * 88, zy + 4 + Math.floor(i / 3) * 90];
+  if (k === 't') return [x + 22 + i * 21, zy + 4];
+  return [x + 80 + (i % 5) * 26, zy + 6 + Math.floor(i / 5) * 26];
+};
+
+function mkAdd(a, b) {
+  const A = dg(a), B = dg(b), pcs = [], ids = {};
+  KEYS.forEach((k, ci) => {
+    ids[k] = { A: [], B: [], C: null };
+    for (let i = 0; i < A[ci]; i++) { const id = k + 'a' + i; ids[k].A.push(id); pcs.push({ id, k, c: 'A' }); }
+    for (let i = 0; i < B[ci]; i++) { const id = k + 'b' + i; ids[k].B.push(id); pcs.push({ id, k, c: 'B' }); }
+  });
+  const co = A[2] + B[2] >= 10, ct = A[1] + B[1] + (co ? 1 : 0) >= 10;
+  if (co) { ids.t.C = 'tc'; pcs.push({ id: 'tc', k: 't', c: 'G' }); }
+  if (ct) { ids.h.C = 'hc'; pcs.push({ id: 'hc', k: 'h', c: 'G' }); }
+  return { type: 'add', A, B, pcs, ids };
+}
+function mkSub(a, b) {
+  const A = dg(a), B = dg(b), pcs = [], ids = {};
+  const bo = A[2] < B[2], bt = (A[1] - (bo ? 1 : 0)) < B[1];
+  KEYS.forEach((k, ci) => {
+    ids[k] = { A: [], N: [], give: null };
+    for (let i = 0; i < A[ci]; i++) { const id = k + 'a' + i; ids[k].A.push(id); pcs.push({ id, k, c: 'A' }); }
+  });
+  if (bo) { for (let i = 0; i < 10; i++) { ids.o.N.push('on' + i); pcs.push({ id: 'on' + i, k: 'o', c: 'G' }); } ids.t.give = ids.t.A[ids.t.A.length - 1]; }
+  if (bt) { for (let i = 0; i < 10; i++) { ids.t.N.push('tn' + i); pcs.push({ id: 'tn' + i, k: 't', c: 'G' }); } ids.h.give = ids.h.A[ids.h.A.length - 1]; }
+  return { type: 'sub', A, B, pcs, ids };
+}
+
+function layout(prob, bs) {
+  const out = {};
+  if (prob.type === 'add') {
+    const prev = { t: 'o', h: 't' }, nxt = { o: 't', t: 'h' };
+    KEYS.forEach((k, ci) => {
+      const I = prob.ids[k], cVis = !!I.C && bs.trade[prev[k]] >= 2;
+      let order = I.A.slice(); if (I.C) order.push(I.C);
+      if (bs.merged[k]) order = order.concat(I.B);
+      const vis = order.filter(id => id !== I.C || cVis);
+      const ts = bs.trade[k] || 0, traded = ts ? vis.slice(0, 10) : [];
+      let i = 0;
+      order.forEach(id => {
+        if (ts >= 2 && traded.includes(id)) return;
+        const [x, y] = slot(k, ci, ZA, i); const o = { x, y, op: 1, sc: 1, delay: (i % 10) * 30 }; i++;
+        if (id === I.C && !cVis) { o.op = 0; o.sc = 0.2; }
+        if (ts === 1 && traded.includes(id)) o.glow = SUN;
+        out[id] = o;
+      });
+      if (!bs.merged[k]) I.B.forEach((id, j) => { const [x, y] = slot(k, ci, ZB, j); out[id] = { x, y, op: 1, sc: 1, delay: j * 30 }; });
+      if (ts >= 2) {
+        const k2 = nxt[k], [tx, ty] = slot(k2, ci - 1, ZA, prob.ids[k2].A.length), [w2, h2] = DIM[k2], [w, h] = DIM[k];
+        traded.forEach((id, j) => { out[id] = { x: tx + w2 / 2 - w / 2, y: ty + h2 / 2 - h / 2, op: 0, sc: 0.4, delay: j * 35 }; });
+      }
+    });
+  } else {
+    KEYS.forEach((k, ci) => {
+      const I = prob.ids[k];
+      const gs = k === 't' ? bs.borrow.o : k === 'h' ? bs.borrow.t : 0;
+      const rs = k === 'o' ? bs.borrow.o : k === 't' ? bs.borrow.t : 0;
+      let act = I.A.filter(id => !(id === I.give && gs >= 2));
+      if (rs >= 2) act = act.concat(I.N);
+      const n = prob.B[ci], rm = bs.remove[k] ? act.slice(act.length - n) : [];
+      act.forEach((id, i) => {
+        const [x, y] = slot(k, ci, ZA, i); const o = { x, y, op: 1, sc: 1, delay: (i % 10) * 35 };
+        if (rm.includes(id)) { if (bs.remove[k] === 1) o.glow = RED; else { o.op = 0; o.ty = -40; o.sc = 0.5; } }
+        if (id === I.give && gs === 1) o.glow = SUN;
+        out[id] = o;
+      });
+      const [w, h] = DIM[k], cx = ci * COLW + COLW / 2, cy = ZA + 70;
+      if (rs < 2) I.N.forEach(id => { out[id] = { x: cx - w / 2, y: cy - h / 2, op: 0, sc: 0.3, delay: 0 }; });
+      if (I.give && gs >= 2) out[I.give] = { x: (ci + 1) * COLW + COLW / 2 - w / 2, y: ZA + 70 - h / 2, op: 0, sc: 1.5, delay: 0 };
+    });
+  }
+  return out;
+}
+
+const pl = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+const LEAFC = ['oklch(0.72 0.14 145)', 'oklch(0.8 0.13 128)', 'oklch(0.64 0.13 155)', 'oklch(0.86 0.12 112)'];
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let STEPS, PROBS, LINE, FULL = 10;
+const LX = 90, LY = 430;
+const lx = v => LX + (v - LINE.lo) * LINE.sc;
+const LEVELS = [{ name: 'Level 1', sub: 'Adding & taking away' }, { name: 'Level 2', sub: 'One trade' }, { name: 'Level 3', sub: 'Two trades' }, { name: 'Level 4', sub: 'Mix it up' }];
+const NAMES = ['hundreds', 'tens', 'ones'], SING = ['hundred', 'ten', 'one'], PIECE = ['big squares', 'rods', 'cubes'], PIECE1 = ['big square', 'rod', 'cube'];
+const cap = x => x[0].toUpperCase() + x.slice(1);
+let curKey = null;
+function useRound(seed, level, round) {
+  const key = seed + '-' + level + '-' + round; if (key === curKey) return; curKey = key;
+  const r = rng(seed), ri = (a, b) => a + Math.floor(r() * (b - a + 1)), num = (h, t, o) => h * 100 + t * 10 + o;
+  const praise = () => ['Great job!', 'Super!', 'Awesome!', 'You did it!', 'Wow, nice!'][ri(0, 4)];
+  const G = {
+    addNo: () => { const ah = ri(1, 3), bh = ri(1, Math.min(3, 6 - ah)), at = ri(1, 8), bt = ri(1, 9 - at), ao = ri(1, 8), bo = ri(1, 9 - ao); return [num(ah, at, ao), num(bh, bt, bo)]; },
+    addOnes: () => { const ao = ri(2, 9), bo = ri(Math.max(1, 10 - ao), 9), at = ri(1, 7), bt = ri(1, 8 - at), ah = ri(1, 3), bh = ri(1, Math.min(3, 6 - ah)); return [num(ah, at, ao), num(bh, bt, bo)]; },
+    addBoth: () => { const ao = ri(2, 9), bo = ri(Math.max(1, 10 - ao), 9), at = ri(3, 9), bt = ri(Math.max(1, 9 - at), Math.min(9, 11 - at)), ah = ri(1, 3), bh = ri(1, Math.min(3, 5 - ah)); return [num(ah, at, ao), num(bh, bt, bo)]; },
+    subNo: () => { const ah = ri(2, 6), bh = ri(1, ah - 1), at = ri(2, 9), bt = ri(1, at - 1), ao = ri(2, 9), bo = ri(1, ao - 1); return [num(ah, at, ao), num(bh, bt, bo)]; },
+    subOnes: () => { const ao = ri(1, 7), bo = ri(ao + 1, 9), at = ri(2, 9), bt = ri(1, at - 1), ah = ri(2, 6), bh = ri(1, ah - 1); return [num(ah, at, ao), num(bh, bt, bo)]; },
+    subBoth: () => { const ao = ri(1, 7), bo = ri(ao + 1, 9), at = ri(1, 3), bt = ri(at, 9), ah = ri(3, 6), bh = ri(1, ah - 2); return [num(ah, at, ao), num(bh, bt, bo)]; },
+  };
+  PROBS = {}; const S = []; let bs, w, title = '';
+  const W0 = (a, b, op, o = {}) => ({ a: String(a), b: String(b), op, marks: ['', '', ''], struck: [0, 0, 0], ans: ['', '', ''], focus: -1, showTop: true, ...o });
+  const B0 = (prob, o = {}) => ({ kind: 'board', prob, merged: { h: 0, t: 0, o: 0 }, trade: { o: 0, t: 0 }, borrow: { o: 0, t: 0 }, remove: { h: 0, t: 0, o: 0 }, focus: -1, showB: true, ...o });
+  const push = (say, cp) => S.push({ title, say, bs: JSON.parse(JSON.stringify(bs)), w: w ? JSON.parse(JSON.stringify(w)) : null, cp: cp || null });
+  const F = c => { bs.focus = c; w.focus = c; };
+  const guided = round === 0;
+
+  const genMeet = () => {
+    const mh = ri(1, 5), mt = ri(2, 9), mo = ri(1, 9), M = num(mh, mt, mo);
+    title = 'Meet the blocks'; PROBS.meet = mkAdd(M, 0);
+    bs = B0('meet', { showB: false }); w = W0(M, '', '', { showTop: false });
+    push(`Big numbers are built from blocks. Let's build ${M}!`);
+    F(0); w.ans[0] = String(mh); push(`A big square is 1 hundred. Here ${mh === 1 ? 'is' : 'are'} ${pl(mh, 'hundred')}.`);
+    F(1); push("A long rod is 1 ten. How many tens can you see?", { type: 'digit', col: 1, ans: String(mt), hint: "Count the long rods, one by one." });
+    F(2); w.ans[1] = String(mt); w.ans[2] = String(mo); push(`Yes, ${mt} tens! A tiny cube is 1 one. Here ${mo === 1 ? 'is' : 'are'} ${pl(mo, 'one')}.`);
+    F(-1); push(`${pl(mh, 'hundred')}, ${pl(mt, 'ten')} and ${pl(mo, 'one')} make ${M}!`);
+  };
+  const genLine = (gd) => {
+    const a = num(ri(2, 7), ri(1, 6), ri(1, 4)), b = num(1, ri(1, 3), ri(2, 5)), y = dg(b), jumps = [[a, a + 100, '+100']]; let p = a + 100;
+    for (let i = 0; i < y[1]; i++) { jumps.push([p, p + 10, '+10']); p += 10; }
+    jumps.push([p, p + y[2], '+' + y[2]]);
+    const lo = Math.floor((a - 5) / 10) * 10, hi = Math.ceil((a + b + 5) / 10) * 10;
+    LINE = { a, b, lo, hi, sc: 806 / (hi - lo), jumps };
+    title = 'Hop along'; bs = { kind: 'line', pos: a, jumps: 0 }; w = W0(a, b, '+');
+    if (gd) push("I can hop on a number line too!");
+    push(`${gd ? "Let's do" : 'Hop along!'} ${a} + ${b}. That's a hop of 1 hundred, ${pl(y[1], 'ten')} and ${pl(y[2], 'one')}.`);
+    bs.pos = a + 100; bs.jumps = 1; push(`Hop 100! Now I'm at ${a + 100}.`);
+    for (let i = 0; i < y[1]; i++) { bs.jumps++; bs.pos += 10; push(`Hop 10${i ? ' again' : ''}... ${bs.pos}.`); }
+    push(`Now hop ${y[2]} more. Where will I land?`, { type: 'digit', col: 'all', ans: String(a + b), hint: `Count ${y[2]} little steps after ${bs.pos}.` });
+    bs.jumps++; bs.pos = a + b; w.ans = String(a + b).split(''); push(`${a + b}! I landed on the answer!`);
+  };
+  const genAdd = (key, a, b, gd, t) => {
+    PROBS[key] = mkAdd(a, b); const A = dg(a), B = dg(b);
+    title = t === 'addNo' ? 'Adding' : 'Adding with trades';
+    bs = B0(key); w = W0(a, b, '+');
+    push(gd ? `Let's add ${a} + ${b}! Orange blocks are ${a}. Blue blocks are ${b}.` : `Your turn! ${a} + ${b}.`);
+    if (gd) { F(2); push('We always start with the ones.'); }
+    let carry = 0, traded = false;
+    for (let ci = 2; ci >= 0; ci--) {
+      const k = KEYS[ci], nm = NAMES[ci]; F(ci); bs.merged[k] = 1;
+      const sum = A[ci] + B[ci] + carry, parts = `${A[ci]} + ${B[ci]}${carry ? ' + 1 more' : ''}`;
+      if (sum < 10) {
+        push(`${cap(nm)}: ${parts}. How many ${nm}?`, { type: 'digit', col: ci, ans: String(sum), hint: `Count all the ${PIECE[ci]}: ${parts}.` });
+        w.ans[ci] = String(sum); carry = 0;
+      } else {
+        push(`${cap(nm)}: ${parts} makes ${sum} ${nm}. Too many!`);
+        bs.trade[k] = 1;
+        if (!traded) push(`Drag 10 ${nm} over to the ${NAMES[ci - 1]} to trade for 1 ${SING[ci - 1]}!`, { type: 'drag', target: ci - 1, label: `Drag to ${cap(NAMES[ci - 1])}`, hint: `Pull the glowing ${PIECE[ci]} over to ${cap(NAMES[ci - 1])}.` });
+        else push(`Trade 10 ${nm} for 1 ${SING[ci - 1]}.`);
+        traded = true; bs.trade[k] = 2; w.marks[ci - 1] = '1';
+        push(`Bundle! 10 ${nm} make 1 ${SING[ci - 1]}. How many ${nm} are left?`, { type: 'digit', col: ci, ans: String(sum - 10), hint: `Count the ${PIECE[ci]} still in ${cap(nm)}.` });
+        w.ans[ci] = String(sum - 10); carry = 1;
+      }
+    }
+    F(-1); push(`${a} + ${b} = ${a + b}. ${praise()}`);
+  };
+  const genSub = (key, a, b, gd, t) => {
+    PROBS[key] = mkSub(a, b); const A = dg(a), B = dg(b), cur = A.slice();
+    title = t === 'subNo' ? 'Taking away' : 'Taking away with trades';
+    bs = B0(key, { showB: false }); w = W0(a, b, '−');
+    push(gd ? `Let's take away! ${a} − ${b}. We start with ${a}.` : `Your turn! ${a} − ${b}.`);
+    let traded = false;
+    for (let ci = 2; ci >= 0; ci--) {
+      const k = KEYS[ci], nm = NAMES[ci]; F(ci); let just = false;
+      if (cur[ci] < B[ci]) {
+        push(cur[ci] === 0 ? `${cap(nm)}: take away ${B[ci]}, but there are not any!` : `${cap(nm)}: take away ${B[ci]}, but there ${cur[ci] === 1 ? 'is' : 'are'} only ${cur[ci]}!`);
+        const bk = ci === 2 ? 'o' : 't'; bs.borrow[bk] = 1;
+        if (!traded) push(`Drag 1 ${SING[ci - 1]} into the ${nm} to break it open!`, { type: 'drag', target: ci, label: `Drag to ${cap(nm)}`, hint: `Pull the glowing ${PIECE1[ci - 1]} over to ${cap(nm)}.` });
+        else push(`Let's break 1 ${SING[ci - 1]} into 10 ${nm}.`);
+        traded = true; just = true; bs.borrow[bk] = 2; cur[ci - 1] -= 1; cur[ci] += 10;
+        w.struck[ci - 1] = 1; w.marks[ci - 1] = String(cur[ci - 1]); w.struck[ci] = 1; w.marks[ci] = String(cur[ci]);
+        push(`Crack! 1 ${SING[ci - 1]} became 10 ${nm}. Now there are ${cur[ci]}.`);
+      }
+      bs.remove[k] = 1; push(just ? `Take away ${B[ci]}.` : `${cap(nm)}: take away ${B[ci]}.`);
+      bs.remove[k] = 2; push(`How many ${nm} are left?`, { type: 'digit', col: ci, ans: String(cur[ci] - B[ci]), hint: `${cur[ci]} take away ${B[ci]}.` });
+      w.ans[ci] = String(cur[ci] - B[ci]);
+    }
+    F(-1); push(`${a} − ${b} = ${a - b}. ${praise()}`);
+  };
+
+  if (level === 1 && round === 0) {
+    title = 'Hello'; bs = { kind: 'intro' }; w = null;
+    push("Hi! I'm Snaily, and my tummy is rumbling! Solve number puzzles to earn tasty leaves for me!", { type: 'start' });
+    genMeet();
+  } else if (round === 0) {
+    title = LEVELS[level - 1].sub; bs = { kind: 'level' }; w = null;
+    push(`Welcome to ${LEVELS[level - 1].name}! ${LEVELS[level - 1].sub}. Let's go!`);
+  }
+  let plan = level === 1 ? ['addNo', 'line', 'subNo'] : level === 2 ? ['addOnes', 'subOnes'] : level === 3 ? ['addBoth', 'subBoth'] : null;
+  if (!plan) { const pool = ['addOnes', 'subOnes', 'addBoth', 'subBoth', 'addNo', 'subNo']; plan = []; while (plan.length < 3) { const t = pool[ri(0, pool.length - 1)]; if (!plan.includes(t)) plan.push(t); } }
+  plan.forEach((t, i) => {
+    if (t === 'line') genLine(guided);
+    else if (t.startsWith('add')) genAdd('p' + i, ...G[t](), guided && i === 0, t);
+    else genSub('p' + i, ...G[t](), guided && i === 0, t);
+  });
+  STEPS = S;
+}
+useRound(1, 1, 0);
+
+class Component extends DCLogic {
+  state = { W: 1280, H: 720, portrait: false, celeb: null, level: 1, round: 0, medals: 0, potty: null, pottySay: '', choice: false, finished: false, medalPop: 0, flying: [], munching: false, voiceName: '', voiceList: [], seed: 1, leaves: 0, total: 0, talking: false, cannon: null, step: 0, playing: false, typed: '', wrong: 0, hint: null, drag: null, bursts: [], stars: 0, scale: 1, muted: false, happy: 0 };
+  boardRef = React.createRef();
+
+  componentDidMount() {
+    let seed = Math.floor(Math.random() * 1e9) + 1, level = 1, round = 0, medals = 0, step = 0;
+    try {
+      const g = k => +localStorage.getItem(k) || 0;
+      if (g('snaily-seed2') > 0) { seed = g('snaily-seed2'); level = Math.min(LEVELS.length, Math.max(1, g('snaily-level') || 1)); round = g('snaily-round'); medals = g('snaily-medals'); step = g('snaily-step'); }
+    } catch (e) {}
+    useRound(seed, level, round);
+    if (!(step >= 0 && step < STEPS.length)) step = 0;
+    this.setState({ seed, level, round, medals, step });
+    this.onResize = () => {
+      const iw = SnailyNative.vw(), ih = SnailyNative.vh(), portrait = ih > iw && Math.min(iw, ih) < 1100;
+      const a = Math.max(iw, ih) / Math.min(iw, ih), land = iw >= ih ? iw / ih : a;
+      const W = Math.round(Math.min(1600, Math.max(1280, 720 * land))), H = Math.round(Math.min(960, Math.max(720, 1280 / land)));
+      const scale = Math.min(iw / W, ih / H);
+      if (portrait && !this.state.portrait) this.setState({ playing: false });
+      this.setState({ scale, W, H, portrait });
+    };
+    if ('serviceWorker' in navigator && location.protocol === 'https:' && window.top === window) navigator.serviceWorker.register('sw.js').catch(() => {});
+    this.onResize(); addEventListener('resize', this.onResize);
+    try {
+      const vn = localStorage.getItem('snaily-voice2'); if (vn) this.setState({ voiceName: vn });
+      const upd = () => this.setState({ voiceList: this.rankVoices().map(v => v.name) });
+      upd(); speechSynthesis.onvoiceschanged = upd;
+    } catch (e) {}
+    this.onKey = e => {
+      if (/^[0-9]$/.test(e.key)) this.press(e.key);
+      else if (e.key === 'ArrowRight') this.go(this.state.step + 1);
+      else if (e.key === 'ArrowLeft') this.go(this.state.step - 1);
+      else if (e.key === ' ') { e.preventDefault(); this.togglePlay(); }
+      else if (e.key === 'Backspace') this.setState({ typed: this.state.typed.slice(0, -1) });
+    };
+    addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount() { removeEventListener('resize', this.onResize); removeEventListener('keydown', this.onKey); clearTimeout(this.t); this.stopVoice(); }
+  stopVoice() { try { speechSynthesis.cancel(); } catch (e) {} if (this.curAudio) { try { this.curAudio.pause(); } catch (e) {} this.curAudio = null; } }
+  voiceOn() { return !this.state.muted && this.props.voice !== false; }
+  kidOn() { return false; }
+  speakKid(t) {
+    if (this.engine === 'device') { this.speakDevice(t); return; }
+    const rate = 1 + ((this.props.voicePitch ?? 1.7) - 1) * 0.5;
+    const parts = t.split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
+    const token = {}; this.curU = token; this.speaking = true;
+    const url = q => '';
+    const mk = q => { const a = new Audio(); a.preload = 'auto'; a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.defaultPlaybackRate = rate; a.playbackRate = rate; a.src = url(q); return a; };
+    const auds = parts.map(() => null);
+    let k = 0;
+    const play = (retry) => {
+      if (this.curU !== token) return;
+      if (k >= parts.length) { this.setState({ talking: false }); this.onSpeechEnd(token); return; }
+      const au = auds[k] || mk(parts[k]); auds[k] = au;
+      if (k + 1 < parts.length && !auds[k + 1]) auds[k + 1] = mk(parts[k + 1]);
+      const err = () => {
+        if (this.curU !== token) return;
+        if (!this.engine) { this.engine = 'device'; this.speakDevice(parts.slice(k).join(' ')); return; }
+        if (!retry) { auds[k] = null; setTimeout(() => play(true), 300); return; }
+        k++; play(false);
+      };
+      au.onplay = () => { this.engine = 'kid'; au.playbackRate = rate; this.setState({ talking: true }); };
+      au.onended = () => { this.setState({ talking: false }); k++; setTimeout(() => play(false), 380); };
+      au.onerror = err;
+      this.curAudio = au;
+      const p = au.play(); if (p && p.catch) p.catch(e => { if (e && e.name === 'NotAllowedError') { this.speaking = false; this.setState({ talking: false }); this.schedule(); } else err(); });
+    };
+    play(false);
+  }
+  rankVoices() {
+    const bad = /Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Organ|Trinoids|Whisper|Zarvox|Wobble|Jester|Superstar|Fred|Ralph|Junior|Grandpa|Grandma|Rocko|Eddy|Flo|Reed|Sandy|Shelley/i;
+    const score = v => (/natural|neural/i.test(v.name) ? 100 : 0) + (/premium|enhanced/i.test(v.name) ? 70 : 0) + (/\bAna\b|child|kid/i.test(v.name) ? 250 : 0) + (/female|Jenny|Aria|Ava|Zoe|Emma|Libby|Sonia|Samantha|Michelle|Google US English|Google UK English Female/i.test(v.name) ? 30 : 0) - (/male\b|Guy|Davis|Tony|Ryan|Christopher|Eric|Daniel|Alex|Fred|Tom|Aaron|Arthur/i.test(v.name) && !/female/i.test(v.name) ? 80 : 0)
+      + (/Google/.test(v.name) ? 45 : 0) + (/Jenny|Aria|Ava|Zoe|Emma|Libby|Sonia|Samantha|Michelle|Ana/.test(v.name) ? 25 : 0) + (/en-US/i.test(v.lang) ? 5 : 0) + (v.localService ? 0 : 3);
+    const girl = /\bAna\b|child|kid|female|Samantha|Victoria|Karen|Tessa|Moira|Fiona|Veena|Allison|Ava|Susan|Zoe|Kathy|Jenny|Aria|Michelle|Emma|Libby|Sonia|Natasha|Clara|Hazel|Zira|Heera|Catherine|Linda|Serena|Nicky|Martha|Kate|Sara|Joanna|Salli|Kimberly|Ivy|Ana |Google US English|Nora|Elsa|Amy|Jessa|Ashley|Cora|Monica|Nancy|Jane|Sonia|Maisie|Molly|Isla|Imogen|Hollie|Bella|Abbi|Olivia|Sophie|Lily/i;
+    const boy = /\bmale\b|Guy|Davis|Tony|Ryan|Christopher|Eric|Daniel|Alex|Fred|Tom\b|Aaron|Arthur|Oliver|George|Brian|Roger|Andrew|Steffan|Brandon|Jacob|Jason|Ethan|Mark|David|James|William|Liam|Thomas|Rishi|Gordon|Lee/i;
+    try { return speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang) && !bad.test(v.name) && girl.test(v.name) && !(boy.test(v.name) && !/female/i.test(v.name))).sort((a, b) => score(b) - score(a)); } catch (e) { return []; }
+  }
+  pickVoice() {
+    const vs = this.rankVoices();
+    return vs.find(v => v.name === this.state.voiceName) || vs[0] || SnailyNative.anyVoice();
+  }
+
+  speak(text, isStep) {
+    if (isStep) this.spokenStep = this.state.step;
+    this.stopVoice();
+    if (!this.voiceOn()) { this.speaking = false; return; }
+    const t = text.replace(/−/g, ' minus ').replace(/\+/g, ' plus ').replace(/=/g, ' equals ').replace(/\.\.\./g, ', ');
+    if (this.kidOn()) this.speakKid(t); else this.speakDevice(t);
+  }
+  speakDevice(t) {
+    if (typeof window.speechSynthesis === 'undefined') { this.speaking = false; this.setState({ talking: false }); return; }
+    const ss = window.speechSynthesis; ss.cancel();
+    const pick = this.pickVoice();
+    if (!pick) { this.speaking = false; this.setState({ talking: false }); this.schedule(); return; }
+    const u = new SpeechSynthesisUtterance(t);
+    const pv = this.pickVoice(), kid = pv && /\bAna\b|child|kid/i.test(pv.name);
+    u.pitch = this.props.voicePitch ?? (kid ? 1.2 : 1.65); u.rate = 0.88; u.volume = 1;
+    u.onstart = () => this.setState({ talking: true });
+    const v = this.pickVoice(); if (v) u.voice = v;
+    u.onend = u.onerror = () => this.onSpeechEnd(u);
+    this.curU = u; this.speaking = true; ss.speak(u);
+  }
+  onSpeechEnd(u) {
+    if (u !== this.curU) return;
+    this.speaking = false; this.setState({ talking: false });
+    const st = STEPS[this.state.step];
+    if (!this.state.playing || st.cp || this.props.autoAdvance === false || this.locked || this.busy()) return;
+    clearTimeout(this.t);
+    const sp = SPEED[this.props.speed] || 1, step = this.state.step;
+    this.t = setTimeout(() => { if (this.state.step === step) this.go(step + 1); }, Math.max(700 / sp, (this.cannonUntil || 0) - Date.now()));
+  }
+  snailX() {
+    const { potty, celeb } = this.state;
+    if (potty && potty !== 'back') return 1066;
+    if (celeb === 'walk') return 128;
+    return 44;
+  }
+  celebrate() {
+    if (this.state.cannon) { this.celebQ = (this.celebQ || 0) + 1; return; }
+    if (SnailyNative.reduced()) { this.cannonUntil = Date.now() + 1500; this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); }, 1500); return; }
+    const id = Date.now(), cols = [SUN, PAL.A[0], PAL.B[0], PAL.G[0], 'oklch(0.8 0.12 15)', 'oklch(0.78 0.12 310)'];
+    this.cannonUntil = Date.now() + 5800;
+    const parts = Array.from({ length: 80 }, (_, i) => {
+      const x1 = -260 + Math.random() * 720, y1 = -(240 + Math.random() * 220);
+      return { x1, y1, x2: x1 * 1.3, y2: 60 + Math.random() * 200, r: (Math.random() - 0.5) * 1440, c: cols[i % cols.length], w: 7 + Math.random() * 6, h: 11 + Math.random() * 8, d: Math.random() * 0.12, star: i % 4 === 0, lc: LEAFC[i % 4] };
+    });
+    const T = (ms, fn) => setTimeout(() => { if (this.state.cannon && this.state.cannon.id === id) fn(); }, ms);
+    const ph = p => this.setState(s => ({ cannon: { ...s.cannon, ...p } }));
+    this.setState({ cannon: { id, parts, phase: 'in', fired: false }, celeb: 'walk' });
+    this.snd('rumble');
+    T(1150, () => { ph({ phase: 'fuse' }); this.snd('fuse'); });
+    T(1450, () => { this.setState({ celeb: 'run' }); this.snd('tap'); });
+    T(2150, () => this.setState({ celeb: 'watch' }));
+    T(2050, () => {
+      ph({ phase: 'boom', fired: true }); this.snd('boom');
+      const lid = 'lob' + id;
+      this.setState(s => ({ flying: [...s.flying, { id: lid, x: 402, y: 533, dx: -222, dy: 16, mx: -110, my: -300, anim: 'lob 1s linear forwards' }] }));
+      T(1000, () => { this.setState(s => ({ flying: s.flying.filter(f => f.id !== lid) })); this.eat(); });
+    });
+    T(2780, () => this.setState({ celeb: 'jump' }));
+    T(3330, () => this.setState({ celeb: 'land' }));
+    T(4500, () => { ph({ phase: 'out' }); this.snd('rumble'); });
+    T(5600, () => {
+      this.setState({ cannon: null, celeb: null });
+      if (this.celebQ) { this.celebQ--; setTimeout(() => this.celebrate(), 200); }
+      else if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300);
+    });
+  }
+  eat() {
+    const id = Math.random().toString(36).slice(2);
+    this.setState(s => {
+      const leaves = Math.min(FULL, s.leaves + 1);
+      if (leaves === FULL && s.leaves < FULL) setTimeout(() => this.snd('burp'), 1500);
+      return { leaves, munching: id };
+    });
+    this.snd('munch');
+    [0, 300, 600, 900].forEach(d => setTimeout(() => this.burst(this.snailX() + 140, 630, 7, true), d));
+    setTimeout(() => this.setState(s => (s.munching === id ? { munching: false, happy: s.happy + 1 } : null)), 1400);
+  }
+  bus() {
+    const a = this.ac(); if (!a) return null;
+    if (!this._bus) {
+      const out = a.createGain(); out.gain.value = 0.9;
+      const comp = a.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+      const rev = a.createConvolver(), len = Math.floor(a.sampleRate * 1.4), ir = a.createBuffer(2, len, a.sampleRate);
+      for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let k = 0; k < len; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / len, 3); }
+      rev.buffer = ir; const wet = a.createGain(); wet.gain.value = 0.22;
+      out.connect(comp); out.connect(rev); rev.connect(wet); wet.connect(comp); comp.connect(a.destination);
+      this._bus = out;
+    }
+    return this._bus;
+  }
+  busy() { return !!(this.state.potty || this.state.choice || this.state.finished); }
+  startPotty() {
+    if (this.state.potty) return;
+    clearTimeout(this.t); this.locked = true;
+    const say1 = "Uh oh! My tummy is full. I need to go potty!";
+    this.setState({ potty: 'walk', pottySay: say1, hint: null, drag: null });
+    this.snd('toilet'); this.speak(say1);
+    setTimeout(() => {
+      this.setState({ potty: 'sit', pottySay: 'Hmmmm... hmmmm...' });
+      for (let i = 0; i < FULL; i++) setTimeout(() => { this.setState(s => ({ leaves: Math.max(0, s.leaves - 1) })); this.snd('plop'); this.burst(1135, 640, 4, true); }, 300 + i * 470);
+    }, 1900);
+    setTimeout(() => {
+      const say2 = "Ahh, all better! You earned a medal!";
+      this.snd('flush'); setTimeout(() => this.snd('medal'), 700);
+      const medals = this.state.medals + 1;
+      try { localStorage.setItem('snaily-medals', String(medals)); } catch (e) {}
+      this.setState(s => ({ potty: 'back', pottySay: say2, medals, medalPop: Date.now(), happy: s.happy + 1, leaves: 0 }));
+      this.speak(say2);
+    }, 6900);
+    setTimeout(() => {
+      const two = this.state.medals % 2 === 0;
+      this.setState({ potty: null, pottySay: '', choice: two });
+      if (two) { this.snd('end'); [0, 300, 600].forEach((d, i) => setTimeout(() => this.burst(400 + i * 240, 200, 20), d)); this.speak("Two more medals! What do you want to do next?"); }
+      else this.resume();
+    }, 9300);
+    setTimeout(() => this.setState({ medalPop: 0 }), 9700);
+  }
+  resume() { this.locked = false; this.speak(STEPS[this.state.step].say, true); this.schedule(); }
+  keepLevel = () => { this.ac(); this.setState({ choice: false }, () => this.resume()); };
+  nextLevel = () => {
+    this.ac(); const level = Math.min(LEVELS.length, this.state.level + 1), seed = Math.floor(Math.random() * 1e9) + 1;
+    useRound(seed, level, 0); this.locked = false;
+    this.setState({ choice: false, level, round: 0, seed, step: 0, typed: '', wrong: 0, hint: null, drag: null, playing: true });
+  };
+  finish = () => { this.ac(); this.setState({ choice: false, finished: true }); this.speak("Thank you for feeding me! Look at all your medals!"); };
+  closeFinish = () => { this.setState({ finished: false }, () => this.resume()); };
+  startOver = () => {
+    this.ac(); const seed = Math.floor(Math.random() * 1e9) + 1;
+    useRound(seed, 1, 0); this.locked = false;
+    try { localStorage.setItem('snaily-medals', '0'); } catch (e) {}
+    this.setState({ finished: false, choice: false, level: 1, round: 0, seed, step: 0, medals: 0, leaves: 0, typed: '', wrong: 0, hint: null, drag: null, playing: false });
+  };
+  nextRound() {
+    const seed = Math.floor(Math.random() * 1e9) + 1, round = this.state.round + 1;
+    useRound(seed, this.state.level, round); this.locked = false;
+    this.setState({ seed, round, step: 0, typed: '', wrong: 0, hint: null, drag: null });
+    this.snd('pop');
+  }
+  noise(t0, d, v, type = 'lowpass', freq = 1000, f2, q = 0.8) {
+    const a = this.ac(), bus = this.bus(); if (!a) return;
+    const b = a.createBuffer(1, Math.max(1, Math.floor(a.sampleRate * d)), a.sampleRate), ch = b.getChannelData(0);
+    for (let k = 0; k < ch.length; k++) ch[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / ch.length, 2.5);
+    const src = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain(), t = a.currentTime + t0;
+    src.buffer = b; fl.type = type; fl.Q.value = q; fl.frequency.setValueAtTime(freq, t); if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.value = v; src.connect(fl); fl.connect(g); g.connect(bus); src.start(t);
+  }
+  mallet(f, t0, v, d = 0.7, bright = 1) {
+    [[1, 1, d], [3.99, 0.35 * bright, d * 0.18], [10.1, 0.12 * bright, d * 0.06]].forEach(([m, a, dd]) => this.tone(f * m, t0, dd, 'sine', v * a));
+  }
+  bell(f, t0, v, d = 1.2) {
+    [[1, 1, d], [2.76, 0.4, d * 0.5], [5.4, 0.18, d * 0.25], [8.9, 0.08, d * 0.12]].forEach(([m, a, dd]) => this.tone(f * m, t0, dd, 'sine', v * a));
+  }
+  componentDidUpdate() {
+    const { step, playing } = this.state;
+    const pv = this._prev || { step: 0, round: 0, level: 1, playing: false, muted: false, hint: null, autoAdvance: this.props.autoAdvance };
+    this._prev = { step, round: this.state.round, level: this.state.level, playing, muted: this.state.muted, hint: this.state.hint, autoAdvance: this.props.autoAdvance };
+    const ps = pv, pp = { autoAdvance: pv.autoAdvance };
+    const moved = ps.step !== step || ps.round !== this.state.round || ps.level !== this.state.level;
+    if (moved && !this.busy()) { this.speak(STEPS[step].say, true); }
+    else if (ps.playing !== playing && playing && this.spokenStep !== step) this.speak(STEPS[step].say, true);
+    if (ps.muted !== this.state.muted && this.state.muted) { this.stopVoice(); this.setState({ talking: false }); this.speaking = false; this.schedule(); }
+    if (this.state.hint && this.state.hint !== ps.hint) this.speak(this.state.hint);
+    if (moved || ps.playing !== playing || pp.autoAdvance !== this.props.autoAdvance) this.schedule();
+    if (moved) {
+      try { localStorage.setItem('snaily-step', String(step)); localStorage.setItem('snaily-seed2', String(this.state.seed)); localStorage.setItem('snaily-level', String(this.state.level)); localStorage.setItem('snaily-round', String(this.state.round)); } catch (e) {}
+    }
+  }
+  schedule() {
+    clearTimeout(this.t);
+    const st = STEPS[this.state.step];
+    if (!this.state.playing || st.cp || this.props.autoAdvance === false || this.busy()) return;
+    const words = st.say.split(' ').length, sp = SPEED[this.props.speed] || 1, step = this.state.step;
+    const minWait = Math.max(0, (this.cannonUntil || 0) - Date.now());
+    const wait = this.speaking ? 15000 : Math.max(minWait, (1700 + words * 310) / sp);
+    this.t = setTimeout(() => { if (this.state.step === step) this.go(step + 1); }, wait);
+  }
+  go(n) {
+    if (this.busy()) return;
+    if (n >= STEPS.length) { this.nextRound(); return; }
+    n = Math.max(0, n);
+    if (n === this.state.step) return;
+    this.locked = false;
+    this.setState({ step: n, typed: '', wrong: 0, hint: null, drag: null });
+    this.snd('pop');
+  }
+  ac() {
+    if (!this._ac) { const C = window.AudioContext || window.webkitAudioContext; if (C) this._ac = new C(); }
+    if (this._ac && this._ac.state === 'suspended') this._ac.resume();
+    return this._ac;
+  }
+  tone(f, t0, d, type, v, f2) {
+    const a = this.ac(); if (!a) return;
+    const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    g.gain.setValueAtTime(0.0001, t); o.connect(g); g.connect(this.bus()); o.start(t); o.stop(t + d + 0.05);
+  }
+  snd(k) {
+    try { SnailyNative.fx(k, this, typeof STEPS !== 'undefined' ? STEPS[this.state.step] : null); } catch (e) {}
+    if (this.state.muted || this.props.sound === false) return;
+    if (k === 'pop') { this.tone(380, 0, 0.09, 'sine', 0.14, 1100); this.noise(0, 0.02, 0.05, 'highpass', 3000); }
+    if (k === 'tap') this.mallet(880 + Math.random() * 80, 0, 0.09, 0.35);
+    if (k === 'yay') { [1047, 1319, 1568, 2093].forEach((f, i) => this.bell(f, i * 0.085, 0.07, 1.1)); [523, 659, 784].forEach((f, i) => this.mallet(f, i * 0.085, 0.1, 0.6)); this.noise(0.05, 0.6, 0.03, 'highpass', 6000); }
+    if (k === 'oops') { this.mallet(392, 0, 0.12, 0.35, 0.4); this.mallet(330, 0.16, 0.12, 0.5, 0.4); }
+    if (k === 'swoosh') this.noise(0, 0.45, 0.35, 'bandpass', 500, 3500, 1.2);
+    if (k === 'rumble') {
+      this.noise(0, 1.0, 0.25, 'lowpass', 160, 120);
+      for (let i = 0; i < 12; i++) this.noise(i * 0.075, 0.03, 0.12, 'bandpass', 1800 + Math.random() * 600, null, 3);
+      this.tone(1400, 0.3, 0.12, 'sine', 0.025, 1700); this.tone(1500, 0.62, 0.12, 'sine', 0.02, 1250);
+    }
+    if (k === 'boom') {
+      this.noise(0, 0.08, 0.6, 'highpass', 900); this.noise(0, 1.1, 0.9, 'lowpass', 900, 120); this.tone(150, 0, 0.7, 'sine', 0.55, 40);
+      for (let i = 0; i < 40; i++) this.noise(0.15 + Math.random() * 1.6, 0.02 + Math.random() * 0.03, 0.04 + Math.random() * 0.05, 'bandpass', 3000 + Math.random() * 4000, null, 2);
+      [1568, 2093, 2637, 3136].forEach((f, i) => this.bell(f, 0.25 + i * 0.14, 0.035, 0.9));
+    }
+    if (k === 'munch') [0, 0.3, 0.6, 0.9].forEach(t => { this.noise(t, 0.07, 0.35, 'bandpass', 1800 + Math.random() * 900, null, 1.5); this.tone(420, t + 0.02, 0.08, 'sine', 0.06, 300); });
+    if (k === 'burp') { this.tone(140, 0, 0.45, 'sawtooth', 0.05, 95); this.noise(0, 0.4, 0.15, 'lowpass', 400); [784, 988, 1175, 1568].forEach((f, i) => this.mallet(f, 0.55 + i * 0.1, 0.1, 0.6)); }
+    if (k === 'grumble') { this.tone(90, 0, 0.6, 'sawtooth', 0.03, 70); this.noise(0, 0.6, 0.12, 'lowpass', 220, 120); this.tone(75, 0.55, 0.5, 'sawtooth', 0.025, 60); }
+    if (k === 'fuse') { this.noise(0, 0.9, 0.12, 'highpass', 4000); for (let i = 0; i < 9; i++) this.noise(i * 0.1 + Math.random() * 0.05, 0.015, 0.1, 'bandpass', 2500 + Math.random() * 2500, null, 3); }
+    if (k === 'toilet') { this.tone(180, 0, 0.35, 'sine', 0.18, 620); this.mallet(988, 0.3, 0.08, 0.4); }
+    if (k === 'plop') { this.tone(950 + Math.random() * 200, 0, 0.14, 'sine', 0.13, 260); this.noise(0.02, 0.08, 0.08, 'bandpass', 1500, null, 2); }
+    if (k === 'flush') { this.noise(0, 1.8, 0.45, 'bandpass', 350, 1400, 0.6); for (let i = 0; i < 10; i++) this.tone(500 + Math.random() * 700, 0.3 + i * 0.12, 0.08, 'sine', 0.05, 1400); }
+    if (k === 'medal') { [784, 988, 1175, 1568].forEach((f, i) => this.bell(f, i * 0.11, 0.08, 1.4)); [392, 494, 587].forEach((f, i) => this.mallet(f, i * 0.11, 0.1, 0.8)); }
+    if (k === 'end') { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => this.mallet(f, i * 0.14, 0.12, 0.8)); this.bell(2093, 1.0, 0.06, 1.8); }
+  }
+
+  burst(x, y, n = 16, small) {
+    const id = Math.random().toString(36).slice(2);
+    const cols = LEAFC;
+    const parts = Array.from({ length: n }, (_, i) => {
+      const a = small ? -Math.PI * (0.1 + Math.random() * 0.8) : (i / n) * Math.PI * 2 + Math.random() * 0.4, r = small ? 30 + Math.random() * 50 : 90 + Math.random() * 110;
+      return { dx: Math.cos(a) * r, dy: Math.sin(a) * r - 30, r: Math.random() * 360, c: cols[i % cols.length], s: small ? 6 + Math.random() * 6 : 18 + Math.random() * 16 };
+    });
+    this.setState(s => ({ bursts: [...s.bursts, { id, x, y, parts }] }));
+    setTimeout(() => this.setState(s => ({ bursts: s.bursts.filter(b => b.id !== id) })), 1300);
+  }
+  win(x, y, delay) {
+    this.locked = true;
+    this.snd('yay'); this.burst(x, y); this.celebrate();
+    this.setState({ hint: null, playing: true });
+    setTimeout(() => this.go(this.state.step + 1), delay);
+  }
+  press(d) {
+    const cp = STEPS[this.state.step].cp;
+    if (!cp || cp.type !== 'digit' || this.locked || this.busy()) return;
+    const typed = this.state.typed + d;
+    if (typed.length < cp.ans.length) { this.setState({ typed }); this.snd('tap'); return; }
+    if (typed === cp.ans) { this.setState({ typed }); this.win(1104, 300, 1000); }
+    else {
+      const wrong = this.state.wrong + 1;
+      this.setState({ typed: '', wrong, hint: cp.hint + (wrong >= 2 ? ` Try ${cp.ans}!` : '') });
+      this.snd('oops');
+    }
+  }
+  togglePlay = () => {
+    this.ac(); if (this.busy()) return;
+    if (STEPS[this.state.step].bs.kind === 'intro') { this.setState({ playing: true }); this.go(this.state.step + 1); this.snd('grumble'); return; }
+    this.setState(s => ({ playing: !s.playing }));
+  };
+  replay = () => this.startOver();
+  dragStart = e => {
+    const cp = STEPS[this.state.step].cp;
+    if (!cp || cp.type !== 'drag' || this.locked || this.busy()) return;
+    e.preventDefault(); this.ac();
+    const sx = e.clientX, sy = e.clientY, sc = this.state.scale;
+    const mv = ev => this.setState({ drag: { dx: (ev.clientX - sx) / sc, dy: (ev.clientY - sy) / sc } });
+    const up = ev => {
+      removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
+      const dx = (ev.clientX - sx) / sc, dy = (ev.clientY - sy) / sc;
+      const r = this.boardRef.current && this.boardRef.current.getBoundingClientRect();
+      const col = r ? Math.floor(((ev.clientX - r.left) / sc) / COLW) : -1;
+      if (Math.hypot(dx, dy) < 8 || col === cp.target) { this.snd('swoosh'); this.setState({ drag: null }); this.win(90 + cp.target * COLW + COLW / 2, 200, 0); }
+      else { this.setState({ drag: null, hint: cp.hint, wrong: this.state.wrong + 1 }); this.snd('oops'); }
+    };
+    addEventListener('pointermove', mv); addEventListener('pointerup', up);
+    this.setState({ drag: { dx: 0, dy: 0 } });
+  };
+
+  renderVals() {
+    useRound(this.state.seed, this.state.level, this.state.round);
+    const { step, playing, typed, drag, scale, muted, happy } = this.state;
+    const st = STEPS[step], bs = st.bs, w = st.w, cp = st.cp;
+    const isBoard = bs.kind === 'board', isLine = bs.kind === 'line';
+    const out = {
+      stageStyle: { position: 'absolute', left: '50%', top: '50%', width: this.state.W, height: this.state.H, background: 'oklch(0.975 0.018 95)', overflow: 'hidden', transform: `translate(-50%,-50%) scale(${scale})`, transformOrigin: '50% 50%', touchAction: 'manipulation' },
+      sceneName: LEVELS[this.state.level - 1].name + ' · ' + st.title,
+      isIntro: bs.kind === 'intro', isBoard, isLine, isLevel: bs.kind === 'level', levelBig: LEVELS[this.state.level - 1].name, levelSub: LEVELS[this.state.level - 1].sub,
+      say: this.state.pottySay || st.say, hint: this.state.hint || '', hasHint: !!this.state.hint,
+      playing, paused: !playing, 
+      start: this.togglePlay, togglePlay: this.togglePlay, replay: this.replay,
+      next: () => { if (this.busy()) return; this.ac(); this.go(step + 1); }, back: () => { if (!this.busy()) this.go(step - 1); },
+      toggleSound: () => this.setState(s => ({ muted: !s.muted })),
+      soundIconStyle: { opacity: muted ? 0.3 : 1, textDecoration: muted ? 'line-through' : 'none' },
+      playBtnStyle: { width: 86, height: 86, borderRadius: '50%', border: 'none', background: 'oklch(0.72 0.14 145)', boxShadow: '0 5px 0 oklch(0.55 0.12 150)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: !playing && !cp ? 'breathe 1.6s ease-in-out infinite' : 'none' },
+      snailWrap: { position: 'absolute', left: this.snailX(), top: this.state.potty && this.state.potty !== 'back' ? 486 : 556, zIndex: this.state.potty || this.state.celeb ? 42 : 'auto', rotate: this.state.potty === 'back' || this.state.celeb === 'run' ? 'y 180deg' : 'y 0deg', translate: this.state.celeb === 'jump' ? '0 -78px' : '0 0', width: 150, height: 120, scale: (b => String(b))(1 + 0.14 * Math.min(1, this.state.leaves / FULL) + (this.state.munching ? 0.18 : 0)), transformOrigin: '50% 100%', transition: (this.state.potty ? 'left 1.8s' : this.state.celeb === 'run' ? 'left .55s' : 'left 1.05s') + ' ease-in-out, top 1.8s ease-in-out, rotate .3s, translate .28s ' + (this.state.celeb === 'jump' ? 'cubic-bezier(.2,.8,.3,1)' : 'cubic-bezier(.6,0,.9,.5)') + ', scale .22s ease', animation: happy ? `joy${happy % 2 ? 'A' : 'B'} .7s ease` : 'none' },
+      mouthStyle: this.state.munching
+        ? { position: 'absolute', left: 117, top: 68, width: 22, height: 16, borderRadius: '45%', background: 'oklch(0.45 0.12 20)', transformOrigin: '50% 50%', animation: 'chomp .3s ease-in-out infinite' }
+        : this.state.talking
+        ? { position: 'absolute', left: 119, top: 70, width: 14, height: 12, borderRadius: '40% 40% 50% 50%', background: 'oklch(0.45 0.12 20)', transformOrigin: '50% 0', animation: 'talk .22s ease-in-out infinite' }
+        : this.state.leaves >= FULL ? { position: 'absolute', left: 116, top: 68, width: 22, height: 12, background: 'oklch(0.45 0.12 20)', borderRadius: '2px 2px 12px 12px' }
+        : this.state.leaves < FULL * 0.35 && bs.kind !== 'intro' && bs.kind !== 'level' ? { position: 'absolute', left: 119, top: 74, width: 14, height: 7, borderTop: '3px solid oklch(0.28 0.03 150)', borderRadius: '12px 12px 0 0' }
+        : { position: 'absolute', left: 118, top: 70, width: 18, height: 9, borderBottom: '3px solid oklch(0.28 0.03 150)', borderRadius: '0 0 12px 12px' },
+      isFull: this.state.leaves >= FULL && !this.state.potty,
+      showThought: !isLine && !this.state.potty && this.state.leaves < FULL && !this.state.munching && !this.state.flying.length,
+      tummy: Array.from({ length: FULL }, (_, k) => ({ style: { width: 20, height: 20, borderRadius: '0 50%', boxSizing: 'border-box', background: k < this.state.leaves ? 'oklch(0.72 0.14 145)' : 'oklch(0.95 0.025 130)', border: k < this.state.leaves ? '2px solid oklch(0.6 0.13 150)' : '2px dashed oklch(0.82 0.05 140)', transform: k < this.state.leaves ? 'scale(1.05)' : 'scale(.85)', transition: 'all .4s cubic-bezier(.34,1.6,.5,1)' } })),
+      voiceOpts: [].concat(this.state.voiceList.map(n => ({ name: n, label: n.replace(/^(Microsoft|Google)\s+/, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ - English.*$/, '').trim() + (/\bAna\b|child|kid/i.test(n) ? ' (kid)' : /natural|neural|premium|enhanced/i.test(n) ? ' ★' : '') }))),
+      hasVoices: true,
+      voiceName: this.kidOn() ? '__kid' : ((this.pickVoice() || {}).name || ''),
+      pickVoiceName: e => { const v = e.target.value; try { localStorage.setItem('snaily-voice2', v); } catch (er) {} this.setState({ voiceName: v }, () => this.speak("Hi! I'm Snaily!")); },
+      testVoice: () => { this.ac(); this.speak("Hi! I'm Snaily. Let's play with numbers!"); },
+      boardRef: this.boardRef, dragStart: this.dragStart,
+      erase: () => this.setState({ typed: typed.slice(0, -1) }),
+    };
+    const md = this.state.medals, lv = this.state.level, ce2 = React.createElement, pt = this.state.potty;
+    out.medalIcons = Array.from({ length: Math.min(md, 4) }, (_, i) => ({ i }));
+    out.noMedals = md === 0; out.moreMedals = md > 4; out.moreMedalsTxt = '+' + (md - 4);
+    out.medalBig = Array.from({ length: Math.min(md, 12) }, (_, i) => ({ i }));
+    out.finishTitle = md === 1 ? 'You earned 1 medal!' : `You earned ${md} medals!`;
+    out.showChoice = this.state.choice; out.showFinish = this.state.finished;
+    out.choiceTitle = `${md} medals! Amazing!`;
+    out.keepLabel = `Keep playing ${LEVELS[lv - 1].name}`;
+    out.canNext = lv < LEVELS.length;
+    out.nextLabel = lv < LEVELS.length ? `Go to ${LEVELS[lv].name}: ${LEVELS[lv].sub}` : '';
+    out.keepLevel = this.keepLevel; out.nextLevel = this.nextLevel; out.finish = this.finish; out.closeFinish = this.closeFinish; out.startOver = this.startOver;
+    out.showControls = !pt;
+    const wht = '#fff', edge = '3px solid oklch(0.85 0.02 230)';
+    out.toiletLayer = pt ? ce2('div', { key: 'toilet', style: { position: 'absolute', left: 1050, top: 500, width: 170, height: 195, zIndex: 41, transformOrigin: '50% 100%', animation: pt === 'back' ? 'toiletOut .6s ease .9s forwards' : 'toiletIn .55s cubic-bezier(.34,1.6,.5,1)', pointerEvents: 'none' } },
+      ce2('div', { style: { position: 'absolute', left: 40, top: 0, width: 90, height: 80, boxSizing: 'border-box', borderRadius: '14px 14px 6px 6px', background: wht, border: edge } },
+        ce2('div', { style: { position: 'absolute', left: 8, top: 12, width: 24, height: 8, borderRadius: 4, background: 'oklch(0.75 0.03 230)' } })),
+      ce2('div', { style: { position: 'absolute', left: 14, top: 100, width: 142, height: 66, boxSizing: 'border-box', borderRadius: '0 0 71px 71px', background: wht, border: edge, borderTop: 'none' } }),
+      ce2('div', { style: { position: 'absolute', left: 52, top: 158, width: 66, height: 36, boxSizing: 'border-box', borderRadius: '6px 6px 14px 14px', background: wht, border: edge } }),
+      ce2('div', { style: { position: 'absolute', left: 0, top: 80, width: 170, height: 32, boxSizing: 'border-box', borderRadius: '50%', background: 'oklch(0.9 0.05 200)', border: '3px solid oklch(0.78 0.05 210)' } })) : null;
+    const mp = this.state.medalPop;
+    out.medalLayer = mp ? ce2('div', { key: 'medal' + mp, style: { position: 'absolute', left: 640, top: 280, width: 200, height: 260, zIndex: 70, pointerEvents: 'none', animation: 'medalPop 2.8s ease forwards' } },
+      ce2('div', { style: { position: 'absolute', left: 52, top: 0, width: 40, height: 100, background: 'oklch(0.66 0.16 25)', transform: 'skewX(14deg)' } }),
+      ce2('div', { style: { position: 'absolute', left: 108, top: 0, width: 40, height: 100, background: 'oklch(0.6 0.12 240)', transform: 'skewX(-14deg)' } }),
+      ce2('div', { style: { position: 'absolute', left: 20, top: 70, width: 160, height: 160, boxSizing: 'border-box', borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%, oklch(0.95 0.1 95), oklch(0.82 0.15 85) 55%, oklch(0.72 0.14 70))', border: '8px solid oklch(0.7 0.13 70)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 0 rgba(120,80,0,.2)' } },
+        ce2('div', { style: { width: 64, height: 64, borderRadius: '0 50%', background: 'oklch(0.66 0.14 145)', boxShadow: 'inset -6px -6px 0 oklch(0.55 0.13 150)' } })),
+      ce2('div', { style: { position: 'absolute', left: -40, top: 236, width: 280, textAlign: 'center', fontSize: 34, fontWeight: 700, color: 'oklch(0.45 0.12 70)' } }, 'Medal!')) : null;
+    out.pieces = []; out.panels = []; out.hasDragBox = false; out.dragBoxStyle = {}; out.dragLabel = '';
+    out.chipA = w ? w.a : ''; out.chipB = w ? w.b : ''; out.showB = isBoard && bs.showB;
+    if (isBoard) {
+      const prob = PROBS[bs.prob], L = layout(prob, bs);
+      const isDragCp = cp && cp.type === 'drag';
+      const dragIds = isDragCp ? prob.pcs.filter(p => L[p.id] && L[p.id].glow === SUN).map(p => p.id) : [];
+      out.pieces = prob.pcs.map(p => {
+        const o = L[p.id] || { x: 0, y: 0, op: 0, sc: 0 };
+        const [pw, ph] = DIM[p.k], [c, e] = PAL[p.c];
+        const dr = drag && dragIds.includes(p.id) ? drag : null;
+        let bg;
+        if (p.k === 'o') bg = `linear-gradient(140deg,rgba(255,255,255,.5),rgba(255,255,255,0) 55%),${c}`;
+        else if (p.k === 't') bg = `repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.16) 7px 8px),${c}`;
+        else bg = `repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),repeating-linear-gradient(90deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),${c}`;
+        const ez = 'cubic-bezier(.34,1.45,.55,1)', d = o.delay || 0;
+        return { style: {
+          position: 'absolute', left: o.x + (dr ? dr.dx : 0), top: o.y + (dr ? dr.dy : 0), width: pw, height: ph, boxSizing: 'border-box', background: bg, border: `2px solid ${e}`, borderRadius: p.k === 'o' ? 6 : 5,
+          opacity: o.op, transform: `translateY(${o.ty || 0}px) scale(${o.sc})`,
+          boxShadow: o.glow ? `0 0 0 3px #fff, 0 0 0 7px ${o.glow}` : '0 3px 0 rgba(60,50,20,.12)',
+          transition: dr ? 'box-shadow .2s' : `left .9s ${ez} ${d}ms, top .9s ${ez} ${d}ms, opacity .6s ease ${d}ms, transform .7s ${ez} ${d}ms, box-shadow .3s`,
+          zIndex: dr ? 20 : o.glow ? 5 : 1, animation: o.glow ? 'glow 1.2s ease-in-out infinite' : 'none', pointerEvents: 'none' } };
+      });
+      out.panels = KEYS.map((k, ci) => {
+        const foc = bs.focus === ci, tgt = isDragCp && cp.target === ci;
+        return { label: ['Hundreds', 'Tens', 'Ones'][ci], divider: bs.showB, style: {
+          position: 'absolute', left: ci * COLW + 6, top: 0, width: COLW - 12, height: 410, boxSizing: 'border-box', borderRadius: 24,
+          background: tgt ? 'oklch(0.96 0.05 140)' : 'oklch(0.995 0.006 95)',
+          border: tgt ? '4px dashed oklch(0.66 0.13 148)' : foc ? '4px solid oklch(0.72 0.13 145)' : '4px solid oklch(0.93 0.025 110)',
+          boxShadow: foc ? '0 0 0 6px oklch(0.92 0.06 140)' : 'none', transition: 'all .35s' } };
+      });
+      if (isDragCp && dragIds.length && !this.locked) {
+        let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+        dragIds.forEach(id => { const o = L[id], p = prob.pcs.find(q => q.id === id), [pw, ph] = DIM[p.k]; x0 = Math.min(x0, o.x); y0 = Math.min(y0, o.y); x1 = Math.max(x1, o.x + pw); y1 = Math.max(y1, o.y + ph); });
+        const dx = drag ? drag.dx : 0, dy = drag ? drag.dy : 0;
+        out.hasDragBox = true; out.dragLabel = cp.label;
+        out.dragBoxStyle = { position: 'absolute', left: x0 - 12 + dx, top: y0 - 12 + dy, width: x1 - x0 + 24, height: y1 - y0 + 24, boxSizing: 'border-box', border: '3px dashed oklch(0.72 0.15 85)', borderRadius: 16, background: 'oklch(0.95 0.08 95 / .25)', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none', zIndex: 30 };
+      }
+    }
+
+    out.ticks = []; out.arcs = []; out.miniStyle = {}; out.hopStyle = {}; out.posChipStyle = {}; out.linePos = ''; out.lineEq = '';
+    if (isLine) {
+      const every = LINE.sc >= 5 ? 10 : 20;
+      for (let v = LINE.lo; v <= LINE.hi; v += 5) {
+        const big = v % 10 === 0, lab = v % every === 0;
+        out.ticks.push({ big: lab, lab: String(v),
+          style: { position: 'absolute', left: lx(v) - 1.5, top: LY - (big ? 12 : 6), width: 3, height: big ? 30 : 18, opacity: big ? 1 : 0.6, borderRadius: 2, background: 'oklch(0.42 0.06 150)' },
+          labStyle: { position: 'absolute', left: lx(v) - 30, top: LY + 22, width: 60, textAlign: 'center', fontSize: 18, fontWeight: 500, color: 'oklch(0.45 0.04 150)' } });
+      }
+      out.arcs = LINE.jumps.slice(0, bs.jumps).map(([f, t, lab], ji, all) => {
+        const x1 = lx(f), x2 = lx(t), aw = x2 - x1, ah = Math.min(150, Math.max(38, aw * 0.42));
+        return { lab,
+          style: { position: 'absolute', left: x1, top: LY - ah, width: aw, height: ah, boxSizing: 'border-box', border: '4px dashed oklch(0.62 0.13 148)', borderBottom: 'none', borderRadius: `${aw / 2}px ${aw / 2}px 0 0 / ${ah}px ${ah}px 0 0` },
+          labStyle: { position: 'absolute', left: x1 + aw / 2 - 40, top: LY - ah - (aw < 50 && ji > 0 && lx(all[ji - 1][1]) - lx(all[ji - 1][0]) < 120 ? 66 : 34), width: 80, textAlign: 'center', fontSize: 24, fontWeight: 700, color: 'oklch(0.5 0.13 150)' } };
+      });
+      const px = lx(bs.pos);
+      out.miniStyle = { position: 'absolute', left: px - 50, top: LY - 56, width: 68, height: 54, transition: 'left 1s cubic-bezier(.45,0,.3,1)' };
+      out.hopStyle = { animation: bs.jumps ? `hop${bs.jumps % 2 ? 'A' : 'B'} 1s ease` : 'none' };
+      out.posChipStyle = { position: 'absolute', left: px - 40, top: LY + 54, width: 80, height: 40, borderRadius: 20, background: 'oklch(0.72 0.14 145)', color: '#fff', fontSize: 26, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 1s cubic-bezier(.45,0,.3,1)' };
+      out.linePos = String(bs.pos);
+      out.lineEq = `${LINE.a} + ${LINE.b} = ${bs.jumps === LINE.jumps.length ? LINE.a + LINE.b : '?'}`;
+    }
+
+    out.showCard = !!w; out.showTop = w ? w.showTop : true; out.op = w ? w.op : '';
+    out.cardCols = w ? [0, 1, 2].map(ci => {
+      const on = cp && cp.type === 'digit' && (cp.col === ci || cp.col === 'all');
+      const ansTxt = on ? (cp.col === 'all' ? (typed[ci] || '') : typed) : w.ans[ci];
+      return { lab: 'HTO'[ci], mark: w.marks[ci], top: w.a[ci] || '', bot: w.b[ci] || '', ans: ansTxt,
+        stackStyle: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 62, borderRadius: 16, background: w.focus === ci ? 'oklch(0.94 0.06 140)' : 'transparent', transition: 'background .4s' },
+        topStyle: { height: 58, fontSize: 50, fontWeight: 600, lineHeight: '58px', color: PAL.A[1], textDecoration: w.struck[ci] ? 'line-through' : 'none', textDecorationColor: RED, textDecorationThickness: '4px', opacity: w.struck[ci] ? 0.5 : 1 },
+        botStyle: { height: 58, fontSize: 50, fontWeight: 600, lineHeight: '58px', color: w.op === '+' ? PAL.B[1] : INK },
+        ansStyle: { width: 52, height: 56, margin: '4px 0', boxSizing: 'border-box', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 46, fontWeight: 700, color: 'oklch(0.45 0.12 150)', border: on ? '3px dashed oklch(0.6 0.13 148)' : '3px solid transparent', background: on ? 'oklch(0.97 0.06 100)' : 'transparent', animation: on ? 'pulse 1.4s infinite' : 'none' } };
+    }) : [];
+    out.pad = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(d => ({ d: String(d), on: () => { this.ac(); this.press(String(d)); } }));
+    out.showPad = !!(cp && cp.type === 'digit') && !this.state.potty;
+    { const W = this.state.W, H = this.state.H, mode = W - 1280 >= 250 ? 'side' : H - 720 >= 150 ? 'bottom' : this.state.scale < 0.8 ? 'row' : 'normal';
+      out.padSide = out.showPad && mode === 'side'; out.padBottom = out.showPad && mode === 'bottom'; out.padRow = out.showPad && mode === 'row'; out.padNormal = out.showPad && mode === 'normal';
+      out.padSideBox = { position: 'absolute', left: 1268, top: 110, width: W - 1282, display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10 };
+      out.padBottomBox = { position: 'absolute', left: 0, top: 736, width: W, display: 'flex', justifyContent: 'center', gap: 12 };
+      out.hill1 = { position: 'absolute', left: -160, top: H - 120, width: 900, height: 320, borderRadius: '50%', background: 'oklch(0.9 0.06 135)' };
+      out.hill2 = { position: 'absolute', left: W * 0.4, top: H - 100, width: W * 0.8, height: 340, borderRadius: '50%', background: 'oklch(0.87 0.07 140)' };
+      out.leafDeco1 = { position: 'absolute', left: W - 70, top: -24, width: 90, height: 90, borderRadius: '50% 0', background: 'oklch(0.82 0.1 140)', transform: 'rotate(20deg)' };
+      out.leafDeco2 = { position: 'absolute', left: W - 100, top: 44, width: 46, height: 46, borderRadius: '50% 0', background: 'oklch(0.87 0.08 135)', transform: 'rotate(70deg)' };
+      out.portrait = this.state.portrait;
+      out.padKeys = out.pad.concat(out.showErase ? [{ d: '⌫', on: () => this.setState({ typed: this.state.typed.slice(0, -1) }) }] : []); }
+    out.showErase = !!(cp && cp.col === 'all');
+
+    const ce = React.createElement, cn = this.state.cannon;
+    const roll = cn && cn.phase === 'out' ? 'cannonOut .95s ease-in forwards' : 'cannonIn .95s cubic-bezier(.3,.9,.35,1) both';
+    const spin = cn && cn.phase === 'out' ? 'spinOut .95s ease-in forwards' : 'spinIn .95s cubic-bezier(.3,.9,.35,1) both';
+    out.cannonLayer = cn ? ce('div', { key: cn.id, style: { position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 45 } },
+      ce('div', { style: { position: 'absolute', left: 270, top: 562, width: 180, height: 110, animation: roll } },
+        ce('div', { style: { position: 'absolute', left: 46, top: 38, width: 4, height: 24, borderRadius: 2, background: 'oklch(0.42 0.04 60)', transform: 'rotate(-35deg)', transformOrigin: '50% 100%' } }),
+        cn.phase === 'fuse' ? ce('div', { style: { position: 'absolute', left: 30, top: 26, width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle, #fff 0 22%, oklch(0.9 0.17 90) 45%, oklch(0.75 0.19 45 / 0) 72%)', animation: 'spark .9s linear forwards, flicker .09s steps(2) infinite' } }) : null,
+        ce('div', { style: { position: 'absolute', left: 50, top: 34, width: 120, height: 44, borderRadius: '20px 8px 8px 20px', background: 'repeating-linear-gradient(90deg, oklch(0.68 0.15 25) 0 22px, oklch(0.86 0.15 95) 22px 30px)', boxShadow: 'inset 0 -6px 0 rgba(80,20,0,.18)', transformOrigin: '22px 22px', transform: 'rotate(-55deg)', animation: cn.phase === 'boom' ? 'kick2 .5s ease-out' : 'none' } },
+          ce('div', { style: { position: 'absolute', right: -6, top: -5, width: 16, height: 54, borderRadius: 6, background: 'oklch(0.52 0.14 25)' } })),
+        ce('div', { style: { position: 'absolute', left: 28, top: 60, width: 116, height: 30, borderRadius: 14, background: 'oklch(0.6 0.08 60)', boxShadow: 'inset 0 -5px 0 oklch(0.5 0.07 55)' } }),
+        [26, 104].map(x => ce('div', { key: x, style: { position: 'absolute', left: x, top: 66, width: 44, height: 44, boxSizing: 'border-box', borderRadius: '50%', background: 'oklch(0.45 0.06 60)', border: '6px solid oklch(0.66 0.09 70)', animation: spin } },
+          [0, 60, 120].map(r => ce('div', { key: r, style: { position: 'absolute', left: 14, top: -2, width: 4, height: 36, borderRadius: 2, background: 'oklch(0.66 0.09 70)', transform: `rotate(${r}deg)` } }))))),
+      cn.fired ? ce('div', { key: 'fx' },
+        ce('div', { style: { position: 'absolute', left: 402, top: 533, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, #fff 0 20%, oklch(0.9 0.16 95) 40%, oklch(0.9 0.16 95 / 0) 70%)', animation: 'flash2 .8s ease-out forwards' } }),
+        cn.parts.map((p, i) => ce('div', { key: i, style: { position: 'absolute', left: 402, top: 533, width: p.star ? 20 : p.w, height: p.star ? 20 : p.h, background: p.star ? p.lc : p.c, borderRadius: p.star ? '0 50%' : 2, '--x1': p.x1 + 'px', '--y1': p.y1 + 'px', '--x2': p.x2 + 'px', '--y2': p.y2 + 'px', '--r': p.r + 'deg', opacity: 0, animation: `confetti 2.4s linear ${p.d}s both` } }))) : null) : null;
+    const sx = this.snailX();
+    out.munchLeaf = this.state.munching ? ce('div', { key: 'm' + this.state.munching, style: { position: 'absolute', left: 146, top: 70, width: 38, height: 38, borderRadius: '0 50%', background: 'oklch(0.72 0.14 145)', boxShadow: 'inset -4px -4px 0 oklch(0.6 0.13 150)', animation: 'bite 1.2s steps(4, end) forwards' } }) : null;
+    out.bubbleFade = { opacity: this.state.celeb ? 0 : 1, transition: 'opacity .35s' };
+    out.feedLayer = ce('div', { style: { position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 60 } },
+      this.state.munching ? ce('div', { key: 'nom' + this.state.munching, style: { position: 'absolute', left: sx + 110, top: 470, padding: '6px 16px', borderRadius: 20, background: 'oklch(0.86 0.16 95)', color: 'oklch(0.32 0.07 80)', fontSize: 26, fontWeight: 700, whiteSpace: 'nowrap', animation: 'nom 1.4s ease forwards' } }, 'Nom nom!') : null,
+      this.state.flying.map(fl => ce('div', { key: fl.id, style: { position: 'absolute', left: fl.x, top: fl.y, width: 34, height: 34, borderRadius: '0 50%', background: 'oklch(0.72 0.14 145)', boxShadow: 'inset -4px -4px 0 oklch(0.6 0.13 150), 0 4px 10px rgba(30,80,30,.25)', '--dx': fl.dx + 'px', '--dy': fl.dy + 'px', '--mx': fl.mx + 'px', '--my': fl.my + 'px', animation: fl.anim } })));
+    out.burstLayer = React.createElement('div', { style: { position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50 } },
+      this.state.bursts.flatMap(b => b.parts.map((p, i) => React.createElement('div', { key: b.id + i, style: { position: 'absolute', left: b.x, top: b.y, width: p.s, height: p.s, borderRadius: '0 50%', background: p.c, boxShadow: 'inset -2px -2px 0 rgba(0,60,20,.15)', '--dx': p.dx + 'px', '--dy': p.dy + 'px', '--r': p.r + 'deg', animation: 'burst 1.15s cubic-bezier(.2,.8,.3,1) forwards' } }))));
+    return out;
+  }
+}
+</script>
+</body>
+</html>

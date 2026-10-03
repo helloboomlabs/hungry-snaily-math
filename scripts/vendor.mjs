@@ -1,0 +1,30 @@
+// Copies the offline runtime files from node_modules into www/vendor:
+//   Capacitor core (browser build), React 18.3.1 UMD builds (used by support.js) and the Fredoka font files.
+// Run after `npm ci`. Fails if anything is missing.
+import { copyFileSync, mkdirSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const nm = (...p) => join(root, 'node_modules', ...p);
+const out = (...p) => join(root, 'www', 'vendor', ...p);
+
+const files = [
+  [nm('@capacitor', 'core', 'dist', 'capacitor.js'), out('capacitor.js')],
+  [nm('react', 'umd', 'react.production.min.js'), out('react.production.min.js')],
+  [nm('react-dom', 'umd', 'react-dom.production.min.js'), out('react-dom.production.min.js')],
+  ...[400, 500, 600, 700].map(w => [
+    nm('@fontsource', 'fredoka', 'files', `fredoka-latin-${w}-normal.woff2`),
+    out('fonts', `fredoka-latin-${w}-normal.woff2`)
+  ]),
+  [nm('@fontsource', 'fredoka', 'LICENSE'), out('fonts', 'OFL-LICENSE.txt')]
+];
+
+mkdirSync(out('fonts'), { recursive: true });
+let bad = 0;
+for (const [src, dst] of files) {
+  if (!existsSync(src)) { console.error('[vendor] MISSING', src); bad++; continue; }
+  copyFileSync(src, dst);
+  console.log('[vendor]', dst.replace(root + '/', ''));
+}
+if (bad) process.exit(1);

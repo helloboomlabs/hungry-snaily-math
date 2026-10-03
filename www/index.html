@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>Hungry Snaily Math</title>
+<link rel="stylesheet" href="app/fonts.css">
+<link rel="stylesheet" href="app/app.css">
+<link rel="stylesheet" href="app/home.css">
+<script src="app/config.js"></script>
+<script src="vendor/capacitor.js"></script>
+<script src="app/native.js"></script>
+</head>
+<body>
+<div id="safe">
+  <div id="stage">
+    <div class="hill h1"></div><div class="hill h2"></div>
+    <div class="leafdeco l1"></div><div class="leafdeco l2"></div>
+    <div id="frame">
+      <header class="title">
+        <h1>Hungry Snaily Math</h1>
+        <p>Pick a garden to play in!</p>
+      </header>
+
+      <button id="gear" class="gear sn-hold" aria-label="Grown-ups: hold for 2 seconds to open settings">
+        <span class="sn-ring"></span>
+        <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="#4f8f55" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.5 7.5 0 0 0-1.7-1L15 3.3h-4L10.7 6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.5 7.5 0 0 0 1.7 1l.3 2.7h4l.3-2.7a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+        <span class="gear-tip">Grown-ups:<br>hold 2s</span>
+      </button>
+
+      <a class="mode garden" href="garden.html" aria-label="Number Garden: adding and taking away with blocks">
+        <div class="art art-garden" aria-hidden="true">
+          <div class="flat"></div><div class="rod"></div><div class="rod r2"></div><div class="cube"></div><div class="cube c2"></div>
+          <div class="plus">+</div>
+          <div class="flat b"></div><div class="rod b"></div><div class="cube b"></div>
+        </div>
+        <div class="mode-name">Number Garden</div>
+        <div class="mode-sub">Adding &amp; taking away with blocks</div>
+        <div class="mode-foot"><span class="medal"></span><span id="ng-medals">0 medals</span><span class="play">Play ›</span></div>
+      </a>
+
+      <a class="mode story" href="story.html" aria-label="Story World: word problems on the garden map">
+        <div class="art art-story" aria-hidden="true">
+          <div class="river"></div>
+          <div class="pond"></div><div class="tree"><i></i></div><div class="house"><i></i></div>
+          <div class="path"></div>
+        </div>
+        <div class="mode-name">Story World</div>
+        <div class="mode-sub">Word problems on the garden map</div>
+        <div class="mode-foot"><span class="medal"></span><span id="sw-medals">0 medals</span><span class="play">Play ›</span></div>
+      </a>
+
+      <div class="snail" aria-hidden="true">
+        <div class="s-body"></div><div class="s-neck"></div><div class="s-st s1"></div><div class="s-st s2"></div>
+        <div class="s-eye e1"><i></i></div><div class="s-eye e2"><i></i></div>
+        <div class="s-shell"><svg width="90" height="90" viewBox="0 0 92 92"><path d="M46 46 A6 6 0 0 1 58 46 A12 12 0 0 1 34 46 A18 18 0 0 1 70 46 A24 24 0 0 1 22 46 A30 30 0 0 1 82 46" fill="none" stroke="#d26a4b" stroke-width="6" stroke-linecap="round"/></svg></div>
+        <div class="s-mouth"></div><div class="s-cheek c1"></div><div class="s-cheek c2"></div>
+      </div>
+      <div class="bubble"><div class="tail"></div><span id="say">Hi! I'm Snaily, and I'm hungry! Which garden shall we visit?</span></div>
+
+      <div id="parent" class="parent" hidden></div>
+    </div>
+  </div>
+</div>
+<script src="app/home.js"></script>
+</body>
+</html>
