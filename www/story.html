@@ -236,12 +236,6 @@ button{font-family:inherit;}
       </sc-for>
     </div>
     <div style="position:absolute;left:984px;top:556px;width:256px;display:flex;flex-direction:column;gap:8px;">
-      <div style="font-size:17px;font-weight:600;color:oklch(0.42 0.05 150);">Snaily's voice</div>
-      <select value="{{ voiceName }}" onChange="{{ pickVoiceName }}" style="height:44px;width:100%;padding:0 12px;border-radius:22px;border:2px solid oklch(0.88 0.04 130);background:#fff;font-family:inherit;font-size:17px;color:oklch(0.35 0.05 150);cursor:pointer;">
-        <sc-for list="{{ voiceOpts }}" as="vo" hint-placeholder-count="0">
-          <option value="{{ vo.name }}">{{ vo.label }}</option>
-        </sc-for>
-      </select>
       <a href="index.html" aria-label="Home" style="height:44px;border-radius:22px;background:#fff;box-shadow:0 3px 0 oklch(0.85 0.04 130);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:oklch(0.42 0.11 150);text-decoration:none;">‹ Home</a>
     </div>
   </sc-if>
@@ -1537,13 +1531,13 @@ class Component extends DCLogic {
 
   stopVoice() { try { speechSynthesis.cancel(); } catch (e) {} if (this.curAudio) { try { this.curAudio.pause(); } catch (e) {} this.curAudio = null; } this.curU = null; }
   voiceOn() { return !this.state.muted && !this.state.voiceOff && this.props.voice !== false; }
-  kidOn() { return false; }
+  kidOn() { return SnailyNative.kidVoiceOn(); }
   speakKid(t) {
     if (this.engine === 'device') { this.speakDevice(t); return; }
     const rate = 1 + ((this.props.voicePitch ?? 1.7) - 1) * 0.5;
     const parts = t.split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
     const token = {}; this.curU = token; this.speaking = true;
-    const url = q => '';
+    const url = q => 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q);
     const mk = q => { const a = new Audio(); a.preload = 'auto'; a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.defaultPlaybackRate = rate; a.playbackRate = rate; a.src = url(q); return a; };
     const auds = parts.map(() => null);
     let k = 0;
@@ -2018,7 +2012,7 @@ class Component extends DCLogic {
       wrap: { position: 'absolute', left: POS[i][0], top: POS[i][1], width: 180, height: 162 }, is: { [p.key]: true },
       pin: { width: 64, height: 64, boxSizing: 'border-box', borderRadius: '50%', background: `oklch(0.95 0.05 ${p.hue})`, border: `5px solid oklch(0.68 0.13 ${p.hue})`, boxShadow: '0 4px 0 oklch(0.55 0.08 140 / .35)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', position: 'relative', zIndex: 1 },
       itemSt: ITEM(p.item, 32), open: () => this.enterSpot(i, 'story'), speedy: () => this.enterSpot(i, 'practice') }));
-    out.voiceOpts = [].concat(S0.voiceList.map(n => ({ name: n, label: n.replace(/^(Microsoft|Google)\s+/, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ - English.*$/, '').trim() + (/\bAna\b|child|kid/i.test(n) ? ' (kid)' : /natural|neural|premium|enhanced/i.test(n) ? ' ★' : '') })));
+    out.voiceOpts = [{ name: '__kid', label: 'Kid voice (online) ★' }].concat(S0.voiceList.map(n => ({ name: n, label: n.replace(/^(Microsoft|Google)\s+/, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ - English.*$/, '').trim() + (/\bAna\b|child|kid/i.test(n) ? ' (kid)' : /natural|neural|premium|enhanced/i.test(n) ? ' ★' : '') })));
     out.voiceName = this.kidOn() ? '__kid' : ((this.pickVoice() || {}).name || '');
     out.pickVoiceName = e => { const v = e.target.value; try { localStorage.setItem('snaily-voice2', v); } catch (er) {} this.ac(); this.setState({ voiceName: v }, () => this.speak("Hi! I'm Snaily!")); };
 

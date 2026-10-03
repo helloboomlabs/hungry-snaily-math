@@ -34,21 +34,12 @@
   refreshCards();
 
   // ------------------------------------------------------------ Snaily says
-  function say(t) {
-    $('say').textContent = t;
-    var s = N.getSettings();
-    if (!s.voice) return;
-    try {
-      speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(t), v = N.anyVoice();
-      if (v) u.voice = v; u.pitch = 1.65; u.rate = 0.88; speechSynthesis.speak(u);
-    } catch (e) {}
-  }
+  function say(t) { $('say').textContent = t; N.say(t); }
   document.querySelector('.snail').addEventListener('click', function () {
     say("Hi! I'm Snaily, and I'm hungry! Which garden shall we visit?");
   });
   document.querySelectorAll('.mode').forEach(function (a) {
-    a.addEventListener('click', function () { N.fx('pop'); try { speechSynthesis.cancel(); } catch (e) {} });
+    a.addEventListener('click', function () { N.fx('pop'); N.stopSay(); });
   });
 
   // ------------------------------------------------------- parent gate
@@ -102,7 +93,7 @@
     return h('div', { 'class': 'p-grid' }, [
       h('div', { 'class': 'p-sec', text: 'Sound & feel' }),
       toggle('sound', 'Sound effects', 'Pops, cheers and the cannon'),
-      toggle('voice', "Snaily's voice", 'Reads stories aloud (on-device voice)'),
+      toggle('voice', "Snaily's voice", 'Snaily reads stories aloud in her kid voice'),
       toggle('haptics', 'Haptics', 'Little buzzes for right answers, bites and medals'),
       toggle('reduceMotion', 'Reduce motion', 'No confetti; calmer movement'),
       h('div', { 'class': 'p-sec', text: 'Number Garden' }),
@@ -228,7 +219,8 @@
         LI('No advertising, and no ad or analytics tools.'),
         LI('No location, contacts, camera or microphone access.'),
         LI('No in-app purchases.'),
-        LI(N.isNative ? 'No internet connection is used. The app works fully offline.' : 'The game sends nothing anywhere. This web version is hosted on GitHub Pages, which may keep standard server logs (such as IP address) when the page loads.')
+        LI("Snaily's voice: when the device is online, the sentence Snaily is about to say (only the game's own text, never anything the child types) is sent to Google's text-to-speech service to make her kid voice, so Google receives that text and the device's IP address. Turn Snaily's voice off in Settings to stop this. Offline, the device's built-in voice is used instead."),
+        N.isNative ? null : LI('This web version is hosted on GitHub Pages, which may keep standard server logs (such as IP address) when the page loads.')
       ]),
       h('h3', { text: 'Children' }),
       P('The app is designed for children aged 6–8 and follows the Apple Kids Category rules. Because we collect no personal information, there is no data for us to access, change or delete.'),
@@ -239,7 +231,7 @@
   }
 
   function openParent(tab) {
-    try { speechSynthesis.cancel(); } catch (e) {}
+    N.stopSay();
     panel.innerHTML = '';
     var body = h('div', { 'class': 'p-body' });
     var tabs = [['settings', 'Settings', settingsTab], ['progress', 'Progress', progressTab], ['about', 'Privacy', aboutTab]];

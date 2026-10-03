@@ -116,17 +116,6 @@ button{font-family:inherit;}
       <div style="font-size:76px;font-weight:700;line-height:1;color:oklch(0.42 0.11 150);">Snaily is hungry!</div>
       <div style="font-size:30px;font-weight:500;color:oklch(0.4 0.05 150);max-width:820px;text-wrap:pretty;">Solve 3-digit adding and taking away puzzles to earn leaves. Feed Snaily until her tummy is full!</div>
       <button onClick="{{ start }}" style="margin-top:14px;padding:0 54px;height:84px;border-radius:42px;border:none;background:oklch(0.72 0.14 145);color:#fff;font-size:38px;font-weight:700;cursor:pointer;box-shadow:0 7px 0 oklch(0.55 0.12 150);animation:breathe 1.8s ease-in-out infinite;">Let's feed Snaily!</button>
-      <sc-if value="{{ hasVoices }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:center;gap:12px;margin-top:6px;font-size:20px;font-weight:500;color:oklch(0.42 0.05 150);">
-          <div>Snaily's voice</div>
-          <select value="{{ voiceName }}" onChange="{{ pickVoiceName }}" style="height:44px;max-width:340px;padding:0 14px;border-radius:22px;border:2px solid oklch(0.88 0.04 130);background:#fff;font-family:inherit;font-size:18px;color:oklch(0.35 0.05 150);cursor:pointer;">
-            <sc-for list="{{ voiceOpts }}" as="vo" hint-placeholder-count="0">
-              <option value="{{ vo.name }}">{{ vo.label }}</option>
-            </sc-for>
-          </select>
-          <button onClick="{{ testVoice }}" style="height:44px;padding:0 18px;border-radius:22px;border:none;background:#fff;box-shadow:0 3px 0 oklch(0.85 0.04 130);font-size:18px;font-weight:600;color:oklch(0.42 0.11 150);cursor:pointer;">Listen</button>
-        </div>
-      </sc-if>
       <a href="story.html" style="margin-top:4px;height:52px;padding:0 28px;border-radius:26px;background:#fff;box-shadow:0 4px 0 oklch(0.85 0.04 130);display:flex;align-items:center;font-size:22px;font-weight:700;color:oklch(0.42 0.11 150);text-decoration:none;">Story Garden: word problems ›</a>
     </div>
   </sc-if>
@@ -613,13 +602,13 @@ class Component extends DCLogic {
   componentWillUnmount() { removeEventListener('resize', this.onResize); removeEventListener('keydown', this.onKey); clearTimeout(this.t); this.stopVoice(); }
   stopVoice() { try { speechSynthesis.cancel(); } catch (e) {} if (this.curAudio) { try { this.curAudio.pause(); } catch (e) {} this.curAudio = null; } }
   voiceOn() { return !this.state.muted && this.props.voice !== false; }
-  kidOn() { return false; }
+  kidOn() { return SnailyNative.kidVoiceOn(); }
   speakKid(t) {
     if (this.engine === 'device') { this.speakDevice(t); return; }
     const rate = 1 + ((this.props.voicePitch ?? 1.7) - 1) * 0.5;
     const parts = t.split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
     const token = {}; this.curU = token; this.speaking = true;
-    const url = q => '';
+    const url = q => 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q);
     const mk = q => { const a = new Audio(); a.preload = 'auto'; a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.defaultPlaybackRate = rate; a.playbackRate = rate; a.src = url(q); return a; };
     const auds = parts.map(() => null);
     let k = 0;
@@ -960,7 +949,7 @@ class Component extends DCLogic {
       isFull: this.state.leaves >= FULL && !this.state.potty,
       showThought: !isLine && !this.state.potty && this.state.leaves < FULL && !this.state.munching && !this.state.flying.length,
       tummy: Array.from({ length: FULL }, (_, k) => ({ style: { width: 20, height: 20, borderRadius: '0 50%', boxSizing: 'border-box', background: k < this.state.leaves ? 'oklch(0.72 0.14 145)' : 'oklch(0.95 0.025 130)', border: k < this.state.leaves ? '2px solid oklch(0.6 0.13 150)' : '2px dashed oklch(0.82 0.05 140)', transform: k < this.state.leaves ? 'scale(1.05)' : 'scale(.85)', transition: 'all .4s cubic-bezier(.34,1.6,.5,1)' } })),
-      voiceOpts: [].concat(this.state.voiceList.map(n => ({ name: n, label: n.replace(/^(Microsoft|Google)\s+/, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ - English.*$/, '').trim() + (/\bAna\b|child|kid/i.test(n) ? ' (kid)' : /natural|neural|premium|enhanced/i.test(n) ? ' ★' : '') }))),
+      voiceOpts: [{ name: '__kid', label: 'Kid voice (online) ★' }].concat(this.state.voiceList.map(n => ({ name: n, label: n.replace(/^(Microsoft|Google)\s+/, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ - English.*$/, '').trim() + (/\bAna\b|child|kid/i.test(n) ? ' (kid)' : /natural|neural|premium|enhanced/i.test(n) ? ' ★' : '') }))),
       hasVoices: true,
       voiceName: this.kidOn() ? '__kid' : ((this.pickVoice() || {}).name || ''),
       pickVoiceName: e => { const v = e.target.value; try { localStorage.setItem('snaily-voice2', v); } catch (er) {} this.setState({ voiceName: v }, () => this.speak("Hi! I'm Snaily!")); },

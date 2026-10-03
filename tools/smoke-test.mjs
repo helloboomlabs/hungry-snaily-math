@@ -33,7 +33,12 @@ const ctx = await browser.newContext({ viewport: { width: 932, height: 430 }, ha
 const page = await ctx.newPage();
 const errors = [], external = [], missing = [];
 page.on('pageerror', e => errors.push(e.message));
-page.on('request', r => { if (!r.url().startsWith(base)) external.push(r.url()); });
+const voiceCalls = [];
+page.on('request', r => {
+  const u = r.url();
+  if (u.startsWith('https://translate.google.com/translate_tts')) voiceCalls.push(u);   // Snaily's kid voice
+  else if (!u.startsWith(base)) external.push(u);
+});
 page.on('response', r => { if (r.status() >= 400) missing.push(r.url()); });
 const go = async (p, wait = 1200) => { await page.goto(base + p); await sleep(wait); };
 const logic = expr => page.evaluate(`(() => { const L = ${LOGIC}; return ${expr}; })()`);
@@ -45,7 +50,14 @@ for (const p of ['index.html', 'garden.html', 'story.html']) {
 }
 ok(errors.length === 0, 'no JavaScript errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
 ok(external.length === 0, 'no network requests outside the app' + (external.length ? ': ' + external.join(', ') : ''));
-ok(missing.length === 0, 'no missing files' + (missing.length ? ': ' + missing.join(', ') : ''));
+ok(!(await page.$('select')), 'no voice picker on the page');
+ok(missing.filter(u => !u.includes('translate_tts')).length === 0, 'no missing files' + (missing.length ? ': ' + missing.join(', ') : ''));
+
+console.log("Snaily's kid voice");
+await go('story.html', 400);
+await page.click('text=Lily Pond', { force: true }); await sleep(1500);
+ok(voiceCalls.some(u => /tl=en-US/.test(u)), 'Story World reads the story in the kid voice');
+ok(await page.evaluate(() => [...document.querySelectorAll('audio')].length >= 0 && !document.querySelector('select')), 'no voice choice in Story World');
 
 console.log('Parent gate + settings');
 await go('index.html', 400);

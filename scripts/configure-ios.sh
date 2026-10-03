@@ -6,7 +6,7 @@
 #
 # - Landscape only (iPhone + iPad), iPad full screen (no multitasking)
 # - Hidden status bar, auto-hiding home indicator, no WebView bounce/zoom
-# - Ambient audio session (does not stop the parent's music)
+# - Playback audio session mixed with other audio (works with the silent switch on)
 # - App icon (1024, no alpha) + launch screen image
 # - iOS 16.0 minimum, universal (iPhone + iPad), version/build numbers
 set -euo pipefail
@@ -58,9 +58,9 @@ s = ad.read_text()
 if "SnailyConfigured" not in s:
     if "import AVFoundation" not in s:
         s = s.replace("import Capacitor", "import Capacitor\nimport AVFoundation\nimport WebKit", 1)
-    hook = ("        // SnailyConfigured: ambient audio mixes with (and never stops) other audio,\n"
-            "        // and follows the ring/silent switch.\n"
-            "        try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])\n")
+    hook = ("        // SnailyConfigured: effects and voice play even with the silent switch on,\n"
+            "        // and mix with (never stop) other audio.\n"
+            "        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])\n")
     m = re.search(r"didFinishLaunchingWithOptions[^{]*\{\n", s)
     if not m:
         sys.exit("could not find didFinishLaunchingWithOptions in AppDelegate.swift")

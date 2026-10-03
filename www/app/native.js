@@ -8,7 +8,7 @@
  *   WebView storage; Preferences = UserDefaults, which it never purges).
  * - Haptics on correct answers, bites and medals.
  * - Parent gate (hold 2 s + adult question) and the break-time lock.
- * No network access of any kind.
+ * Network: only Snaily's kid voice (when online); everything else is local.
  */
 (function () {
   'use strict';
@@ -108,6 +108,42 @@
              vs.find(function (v) { return /^en/i.test(v.lang); }) || null;
     } catch (e) { return null; }
   }
+
+  // Snaily's kid voice (the designed voice): Google's en-US speech, played
+  // 1.35x faster with the pitch raised, exactly as in the prototype. It needs
+  // internet; offline Snaily falls back to the device's own voice.
+  function kidVoiceOn() {
+    var cfg = window.SNAILY_CONFIG || {};
+    return cfg.kidVoiceOnline !== false && navigator.onLine !== false;
+  }
+  var KID_RATE = 1.35, curAudio = null, sayToken = 0;
+  function kidUrl(q) { return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q); }
+  function stopSay() { sayToken++; try { speechSynthesis.cancel(); } catch (e) {} if (curAudio) { try { curAudio.pause(); } catch (e) {} curAudio = null; } }
+  function sayDevice(t) {
+    try { var u = new SpeechSynthesisUtterance(t), v = anyVoice(); if (v) u.voice = v; u.pitch = 1.65; u.rate = 0.88; speechSynthesis.speak(u); } catch (e) {}
+  }
+  // Speaks a line in Snaily's voice (home screen and break screen).
+  function say(t) {
+    stopSay();
+    if (!getSettings().voice || !t) return;
+    if (!kidVoiceOn()) { sayDevice(t); return; }
+    var parts = t.split(/(?<=[.!?])\s+/).filter(Boolean), k = 0, token = sayToken;
+    (function next() {
+      if (token !== sayToken || k >= parts.length) return;
+      var a = new Audio(); a.preservesPitch = false; a.webkitPreservesPitch = false; a.defaultPlaybackRate = KID_RATE; a.playbackRate = KID_RATE;
+      a.src = kidUrl(parts[k]);
+      a.onended = function () { k++; setTimeout(next, 380); };
+      a.onerror = function () { if (token === sayToken) sayDevice(parts.slice(k).join(' ')); };
+      a.onplay = function () { a.playbackRate = KID_RATE; };
+      curAudio = a;
+      var p = a.play(); if (p && p.catch) p.catch(function (e) { if (!(e && e.name === 'NotAllowedError')) a.onerror(); });
+    })();
+  }
+
+  // iPhone/iPad Safari mutes Web Audio sound effects (cannon, confetti, pops)
+  // when the ring/silent switch is on, while Snaily's voice still plays.
+  // "playback" makes the effects play like the voice does.
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
 
   // ---------------------------------------------------------------- haptics
   var Haptics = plugin('Haptics');
@@ -279,13 +315,7 @@
       });
     });
     document.body.appendChild(breakEl);
-    setTimeout(function () {
-      try {
-        if (!getSettings().voice) return;
-        var u = new SpeechSynthesisUtterance("I'm so sleepy! Time for a break. Let's play again later.");
-        var v = anyVoice(); if (v) u.voice = v; u.pitch = 1.6; u.rate = 0.88; speechSynthesis.speak(u);
-      } catch (e) {}
-    }, 400);
+    setTimeout(function () { say("I'm so sleepy! Time for a break. Let's play again later."); }, 400);
   }
   function hideBreak() { if (breakEl) { breakEl.remove(); breakEl = null; } }
   function tick() {
@@ -310,7 +340,7 @@
     tick(); setInterval(tick, TICK * 1000);
   });
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) { try { speechSynthesis.cancel(); } catch (e) {} }
+    if (document.hidden) stopSay();
   });
 
   // Web version: cache the game for offline play (the iOS app doesn't need this).
@@ -325,7 +355,7 @@
     getSettings: getSettings, setSettings: setSettings, DEFAULTS: DEFAULTS,
     restore: restore, resetProgress: resetProgress,
     vw: vw, vh: vh, insets: insets,
-    anyVoice: anyVoice, fx: fx, buzz: buzz, stats: stats, solved: solved,
+    anyVoice: anyVoice, fx: fx, buzz: buzz, say: say, stopSay: stopSay, kidVoiceOn: kidVoiceOn, stats: stats, solved: solved,
     reduced: function () { return document.documentElement.classList.contains('rm'); },
     parentGate: parentGate, holdButton: holdButton, h: h,
     weekSeconds: weekSeconds, breakUntil: breakUntil, showBreak: showBreak

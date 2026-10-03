@@ -4,7 +4,8 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
 const www = new URL('../www/', import.meta.url).pathname;
-const BAD = [/https?:\/\/(?!www\.w3\.org\/)/i, /translate\.google/i, /fonts\.googleapis/i, /unpkg\.com/i];
+// Only allowed network use: Snaily's kid voice (translate.google.com/translate_tts).
+const BAD = [/https?:\/\/(?!www\.w3\.org\/|translate\.google\.com\/translate_tts)/i, /fonts\.googleapis/i, /unpkg\.com/i];
 // support.js contains CDN fallback constants that are never used because
 // React is preloaded from vendor/ (loadReactUmd returns early).
 const ALLOW = new Set(['support.js', 'vendor/capacitor.js', 'vendor/react.production.min.js', 'vendor/react-dom.production.min.js']);

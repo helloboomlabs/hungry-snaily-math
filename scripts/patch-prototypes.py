@@ -48,10 +48,8 @@ COMMON = [
     ("position:fixed;inset:0;overflow:hidden;font-family:'Fredoka'",
      "position:fixed;top:var(--sa-t);right:var(--sa-r);bottom:var(--sa-b);left:var(--sa-l);overflow:hidden;font-family:'Fredoka'", 1),
     ("const iw = innerWidth, ih = innerHeight,", "const iw = SnailyNative.vw(), ih = SnailyNative.vh(),", 1),
-    # Remove the unlicensed online "Kid voice" (Google Translate TTS). On-device voices only.
-    ("kidOn() { return !this.state.voiceName || this.state.voiceName === '__kid'; }", "kidOn() { return false; }", 1),
-    ("[{ name: '__kid', label: 'Kid voice (online) ★' }].concat(", "[].concat(", 1),
-    ("'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q)", "''", 1),
+    # Snaily's kid voice (as designed): used when online, device voice when offline.
+    ("kidOn() { return !this.state.voiceName || this.state.voiceName === '__kid'; }", "kidOn() { return SnailyNative.kidVoiceOn(); }", 1),
     ("|| vs[0] || null", "|| vs[0] || SnailyNative.anyVoice()", 1),
     # Haptics + parent settings hook on every sound effect.
     ("  snd(k) {\n", "  snd(k) {\n    try { SnailyNative.fx(k, this, typeof STEPS !== 'undefined' ? STEPS[this.state.step] : null); } catch (e) {}\n", 1),
@@ -81,17 +79,30 @@ GARDEN = [
     ('<a href="Snaily Story World.dc.html" style="margin-top:4px', '<a href="story.html" style="margin-top:4px', 1),
 ]
 
-FORBIDDEN = ["https://", "http://", "Snaily Story World.dc.html", "Snaily Number Garden.dc.html", "translate.google"]
+# Regex removals: (pattern, expected_count). Removes the voice pickers so
+# Snaily always uses her one kid voice.
+import re
+STORY_RE = [
+    (r'      <div style="[^"]*">Snaily\'s voice</div>\n      <select value="\{\{ voiceName \}\}".*?</select>\n', 1),
+]
+GARDEN_RE = [
+    (r'      <sc-if value="\{\{ hasVoices \}\}".*?</sc-if>\n', 1),
+]
+
+FORBIDDEN = ["Snaily Story World.dc.html", "Snaily Number Garden.dc.html", "fonts.googleapis", "unpkg.com"]
 
 
-def patch(src_name, dst_name, extra):
+def patch(src_name, dst_name, extra, extra_re=()):
     text = (SRC / src_name).read_text(encoding="utf-8")
+    for pat, n in extra_re:
+        text, c = re.subn(pat, "", text, flags=re.S)
+        if c != n:
+            sys.exit(f"[patch] {src_name}: expected {n} match(es) for regex {pat[:60]!r}, found {c}")
     for old, new, n in COMMON + extra:
         c = text.count(old)
         if c != n:
             sys.exit(f"[patch] {src_name}: expected {n} match(es) for {old[:70]!r}, found {c}")
         text = text.replace(old, new)
-    # The Story World prototype has a few cosmetic http(s) mentions? Fail on any.
     for bad in FORBIDDEN:
         if bad in text:
             line = next(i for i, l in enumerate(text.splitlines(), 1) if bad in l)
@@ -101,5 +112,5 @@ def patch(src_name, dst_name, extra):
 
 
 if __name__ == "__main__":
-    patch("Snaily Story World.dc.html", "story.html", STORY)
-    patch("Snaily Number Garden.dc.html", "garden.html", GARDEN)
+    patch("Snaily Story World.dc.html", "story.html", STORY, STORY_RE)
+    patch("Snaily Number Garden.dc.html", "garden.html", GARDEN, GARDEN_RE)
