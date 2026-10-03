@@ -132,3 +132,13 @@ html.rm .snail { animation: none; }
 .prose p, .prose li { margin: 4px 0; }
 .danger { background: oklch(0.62 0.16 25); box-shadow: 0 4px 0 oklch(0.5 0.14 25); }
 .p-note { font-size: 17px; color: oklch(0.5 0.04 150); margin-top: 10px; }
+
+/* Phone held upright (web version): ask to turn sideways. The iOS app is landscape-only. */
+.turn { display: none; }
+@media (orientation: portrait) and (max-width: 1099px) {
+  .turn { position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+    background: var(--page); color: oklch(0.42 0.11 150); font: 700 26px 'Fredoka', system-ui, sans-serif; text-align: center; padding: 32px; }
+  .turn-phone { width: 70px; height: 120px; border: 6px solid currentColor; border-radius: 14px; animation: snTurn 2.4s ease-in-out infinite; }
+}
+@keyframes snTurn { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+html.rm .turn-phone { animation: none; transform: rotate(-90deg); }

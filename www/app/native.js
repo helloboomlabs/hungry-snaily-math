@@ -313,7 +313,14 @@
     if (document.hidden) { try { speechSynthesis.cancel(); } catch (e) {} }
   });
 
+  // Web version: cache the game for offline play (the iOS app doesn't need this).
+  if (!isNative && 'serviceWorker' in navigator && location.protocol === 'https:') {
+    addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+  var standalone = !!(window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches));
+
   window.SnailyNative = {
+    standalone: standalone,
     isNative: isNative,
     getSettings: getSettings, setSettings: setSettings, DEFAULTS: DEFAULTS,
     restore: restore, resetProgress: resetProgress,

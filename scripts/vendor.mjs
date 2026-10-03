@@ -20,6 +20,11 @@ const files = [
   [nm('@fontsource', 'fredoka', 'LICENSE'), out('fonts', 'OFL-LICENSE.txt')]
 ];
 
+// Web-version icons (Home Screen / manifest): the 1024 app icon, scaled by the browser.
+const icon = join(root, 'resources', 'AppIcon-1024.png');
+mkdirSync(join(root, 'www', 'icons'), { recursive: true });
+for (const n of ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png']) files.push([icon, join(root, 'www', 'icons', n)]);
+
 mkdirSync(out('fonts'), { recursive: true });
 let bad = 0;
 for (const [src, dst] of files) {

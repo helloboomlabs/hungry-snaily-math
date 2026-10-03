@@ -214,6 +214,10 @@
     var P = function (t) { return h('p', { text: t }); };
     var LI = function (t) { return h('li', { text: t }); };
     return h('div', { 'class': 'prose' }, [
+      (!N.isNative && !N.standalone) ? h('div', { 'class': 'stat', style: 'margin-bottom:12px' }, [
+        h('h3', { text: 'Put Snaily on the Home Screen' }),
+        P('On iPhone or iPad, open this page in Safari, tap the Share button, then tap “Add to Home Screen”. Snaily then opens full screen like an app and keeps working without internet.')
+      ]) : null,
       h('h3', { text: 'Privacy policy' }),
       P('Hungry Snaily Math is a math game for young children. We do not collect, store or share any personal information.'),
       h('h3', { text: 'What the app stores' }),
@@ -224,7 +228,7 @@
         LI('No advertising, and no ad or analytics tools.'),
         LI('No location, contacts, camera or microphone access.'),
         LI('No in-app purchases.'),
-        LI('No internet connection is used. The app works fully offline.')
+        LI(N.isNative ? 'No internet connection is used. The app works fully offline.' : 'The game sends nothing anywhere. This web version is hosted on GitHub Pages, which may keep standard server logs (such as IP address) when the page loads.')
       ]),
       h('h3', { text: 'Children' }),
       P('The app is designed for children aged 6–8 and follows the Apple Kids Category rules. Because we collect no personal information, there is no data for us to access, change or delete.'),

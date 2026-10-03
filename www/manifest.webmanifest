@@ -1,0 +1,15 @@
+{
+  "name": "Hungry Snaily Math",
+  "short_name": "Snaily Math",
+  "description": "Maths games for ages 6–8: Number Garden and Story World.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#faf6ea",
+  "theme_color": "#faf6ea",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "1024x1024", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

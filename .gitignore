@@ -9,3 +9,4 @@ www/vendor/*
 *.pem
 CERTIFICATE_PRIVATE_KEY*
 .DS_Store
+www/icons/
