@@ -57,7 +57,21 @@ COMMON = [
     ("  snd(k) {\n", "  snd(k) {\n    try { SnailyNative.fx(k, this, typeof STEPS !== 'undefined' ? STEPS[this.state.step] : null); } catch (e) {}\n", 1),
 ]
 
+TIP = (
+    '          <div class="sn-tip" aria-hidden="true" style="position:absolute;left:-6px;top:-16px;width:192px;box-sizing:border-box;padding:8px 10px 9px;border-radius:16px;background:#fff;'
+    'box-shadow:0 4px 0 oklch(0.78 0.06 130), 0 10px 22px rgba(40,70,40,.22);display:flex;flex-direction:column;gap:5px;pointer-events:none;z-index:6;">\n'
+    '            <div style="font-size:13px;font-weight:700;letter-spacing:.3px;color:oklch(0.5 0.06 150);">Collect here</div>\n'
+    '            <div style="display:flex;align-items:center;gap:8px;font-size:19px;font-weight:700;color:oklch(0.36 0.08 150);"><div style="{{ s.itemSt }}"></div><div>{{ s.itemName }}</div></div>\n'
+    '            <div style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:oklch(0.48 0.05 150);white-space:nowrap;"><div>10 {{ s.itemName }} →</div><div style="{{ s.treatSt }}"></div><div>{{ s.treatName }}</div></div>\n'
+    '          </div>\n'
+)
+
 STORY = [
+    # Map: hovering a place shows what you collect there and the treat it swaps for.
+    ('        <div style="{{ s.wrap }}">', '        <div class="sn-spot" style="{{ s.wrap }}">', 1),
+    ('          <button onClick="{{ s.speedy }}"', TIP + '          <button onClick="{{ s.speedy }}"', 1),
+    ("out.spots = SPOTS.map((p, i) => ({ name: p.name, topic: p.topic, ",
+     "out.spots = SPOTS.map((p, i) => ({ name: p.name, topic: p.topic, itemName: p.many, itemSt: ITEM(p.item, 24), treatName: TREAT_NAME[TREAT_OF[p.key]].toLowerCase(), treatSt: TREAT(TREAT_OF[p.key], 18), ", 1),
     # Progress report: count each solved story per spot.
     ("    this.setState(st => ({ phase: 'done', wrong: 0, earned: st.earned + 1,",
      "    try { SnailyNative.solved(this.state.spot); } catch (e) {}\n    this.setState(st => ({ phase: 'done', wrong: 0, earned: st.earned + 1,", 1),

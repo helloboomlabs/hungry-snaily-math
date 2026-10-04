@@ -86,3 +86,9 @@ html.game button::after, .sn-key::after, .gear::after, .p-tab::after, .toggle::b
   content: ''; position: absolute; inset: -10px; border-radius: inherit;
 }
 .sn-key, .p-tab { position: relative; }
+
+/* Story World map: hover a place to see what you collect there. */
+.sn-tip { opacity: 0; transform: translateY(6px) scale(.96); transition: opacity .15s ease, transform .15s ease; }
+.sn-spot:hover .sn-tip { opacity: 1; transform: none; }
+@media (hover: none) { .sn-tip { display: none; } }
+html.rm .sn-tip { transition: opacity .15s ease; transform: none; }
