@@ -367,7 +367,7 @@ button{font-family:inherit;}
           <button onClick="{{ primary }}" style="{{ primarySt }}">{{ primaryLabel }}</button>
         </sc-if>
         <sc-if value="{{ showSelfBtn }}" hint-placeholder-val="{{ false }}">
-          <button onClick="{{ selfBtn }}" style="flex:none;min-width:200px;padding:0 24px;border-radius:48px;border:3px solid oklch(0.85 0.06 130);background:#fff;color:oklch(0.42 0.11 150);font-size:30px;font-weight:700;cursor:pointer;box-shadow:0 6px 0 oklch(0.85 0.05 130);white-space:nowrap;">I can do it!</button>
+          <button onClick="{{ selfBtn }}" style="flex:none;min-width:200px;padding:0 24px;border-radius:48px;border:3px solid oklch(0.85 0.06 130);background:#fff;color:oklch(0.42 0.11 150);font-size:30px;font-weight:700;cursor:pointer;box-shadow:0 6px 0 oklch(0.85 0.05 130);white-space:nowrap;">{{ selfLabel }}</button>
         </sc-if>
       </div>
     </div>
@@ -525,6 +525,14 @@ const P = a => a[Math.floor(Math.random() * a.length)];
 const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const S = (v, kind, name, pre = '', suf = '') => ({ v: String(v), kind, name, pre, suf });
 const C = (id, say, hint) => ({ type: 'calc', id, say, hint: hint || say });
+// Speedy feed "I know how!": just the sum or the bare question, no explanation.
+const quickSay = t => {
+  const raw = String(t.say).split(/(?<=[.!:])\s+|(?<=\?)\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean), cl = raw.map(x => x.replace(/[.:]$/, ''));
+  const m = cl.filter(x => /[−+×÷=]/.test(x)).pop();
+  if (m) { const e = m.replace(/^.*?(?=[\d$?(][^a-z]*[−+×÷=])/i, ''); return /=/.test(e) ? e : e + ' = ?'; }
+  if (t.ex) return `${t.ex.a} ${t.ex.op} ${t.ex.b} = ?`;
+  return raw.filter(x => /\?$/.test(x)).pop() || cl[cl.length - 1] || t.say;
+};
 const disp = s => s.pre + s.v + s.suf;
 const cap = x => x ? x[0].toUpperCase() + x.slice(1) : x;
 const two = () => shuf(FR).slice(0, 2);
@@ -1582,7 +1590,7 @@ class Component extends DCLogic {
   snailX() { const { potty, celeb } = this.state; if (potty && potty !== 'back') return 1066; if (celeb === 'walk') return 128; return 44; }
   celebrate() {
     if (this.state.cannon) { this.celebQ = (this.celebQ || 0) + 1; return; }
-    if (SnailyNative.reduced()) { this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); else this.unlock(); }, 1500); return; }
+    if (SnailyNative.reduced() || (this.state.quick && this.state.mode === 'practice')) { this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); else this.unlock(); }, 1500); return; }
     const id = Date.now(), cols = [SUN, PAL.A[0], PAL.B[0], PAL.G[0], 'oklch(0.8 0.12 15)', 'oklch(0.78 0.12 310)'];
     const parts = Array.from({ length: 80 }, (_, i) => {
       const x1 = -260 + Math.random() * 720, y1 = -(240 + Math.random() * 220);
@@ -2029,7 +2037,7 @@ class Component extends DCLogic {
         else say = si === 1 ? 'Your turn! Drag each number from the story to its box. Read the labels!' : `Your turn! Build the ${M} from the story.` + (sto.chips.length > sto.given.length ? ' Watch out for a trick number!' : '');
         out.showNote = true; out.noteTxt = sto.guided ? 'Watch Snaily put each number from the story into its box.' : 'Drag a number into a box. Or tap a number, then tap a box.';
       } else if (phase === 'solve' && t) {
-        say = t.type === 'guess' ? this.guessSay(sto) : t.say;
+        say = t.type === 'guess' ? this.guessSay(sto) : prac && S0.quick ? quickSay(t) : t.say;
         if (t.type === 'pick') { out.showPick = true; out.pickOpts = t.opts.map(o => ({ txt: o, on: () => { this.ac(); this.pick(o); } })); }
         else if (t.type === 'guess' && sto.guided) { out.showNote = true; out.noteTxt = 'Watch Snaily guess and check. Each row is one try.'; }
         else {
@@ -2051,6 +2059,8 @@ class Component extends DCLogic {
       const how = phase === 'solve' && t && t.wk;
       out.showSelfBtn = gl && !this.locked && !this.busy() && !S0.celeb && (phase === 'build' ? !S0.gstep : !(S0.guesses || []).length);
       out.selfBtn = () => { this.ac(); sto.guided = false; this.snd('pop'); this.forceUpdate(); };
+      out.selfLabel = 'I can do it!';
+      if (prac && phase === 'solve' && t && t.type !== 'guess' && !S0.quick && !this.locked && !this.busy() && !S0.celeb) { out.showSelfBtn = true; out.selfLabel = 'I know how!'; out.selfBtn = () => { this.ac(); this.snd('pop'); this.setState({ quick: true }); }; }
       out.primaryLabel = gl ? 'Show me' : (phase === 'done' && !prac) ? (si < S0.visit.length - 1 ? 'Next story' : 'Finish visit') : how ? 'Show me how' : '';
       out.primary = gl ? this.showMe : phase === 'done' ? this.nextStory : this.openWork;
       out.showTip = true; out.showTabs = false; out.tabs = [];

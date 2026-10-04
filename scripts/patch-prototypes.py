@@ -107,6 +107,28 @@ STORY = [
     # Meal clock: "Next meal in 12:34" instead of "Snaily day 1 / Eat in 12:34".
     ("out.dayTxt = `Snaily day ${S0.day || 1}`;", "out.dayTxt = S0.meal ? 'Snaily is hungry' : 'Next meal in';", 1),
     ("'Eating time!' : `Eat in ${Math.floor(sec / 60)}", "'Eating time!' : `${Math.floor(sec / 60)}", 1),
+    # Speedy feed: "I know how!" skips Snaily's explanations (she just says
+    # the sum) and uses the short celebration, for children who want speed.
+    ("say = t.type === 'guess' ? this.guessSay(sto) : t.say;",
+     "say = t.type === 'guess' ? this.guessSay(sto) : prac && S0.quick ? quickSay(t) : t.say;", 1),
+    ("const C = (id, say, hint) => ({ type: 'calc', id, say, hint: hint || say });",
+     "const C = (id, say, hint) => ({ type: 'calc', id, say, hint: hint || say });\n"
+     "// Speedy feed \"I know how!\": just the sum or the bare question, no explanation.\n"
+     "const quickSay = t => {\n"
+     "  const raw = String(t.say).split(/(?<=[.!:])\\s+|(?<=\\?)\\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean), cl = raw.map(x => x.replace(/[.:]$/, ''));\n"
+     "  const m = cl.filter(x => /[−+×÷=]/.test(x)).pop();\n"
+     "  if (m) { const e = m.replace(/^.*?(?=[\\d$?(][^a-z]*[−+×÷=])/i, ''); return /=/.test(e) ? e : e + ' = ?'; }\n"
+     "  if (t.ex) return `${t.ex.a} ${t.ex.op} ${t.ex.b} = ?`;\n"
+     "  return raw.filter(x => /\\?$/.test(x)).pop() || cl[cl.length - 1] || t.say;\n"
+     "};", 1),
+    ("      out.selfBtn = () => { this.ac(); sto.guided = false; this.snd('pop'); this.forceUpdate(); };\n",
+     "      out.selfBtn = () => { this.ac(); sto.guided = false; this.snd('pop'); this.forceUpdate(); };\n"
+     "      out.selfLabel = 'I can do it!';\n"
+     "      if (prac && phase === 'solve' && t && t.type !== 'guess' && !S0.quick && !this.locked && !this.busy() && !S0.celeb) { out.showSelfBtn = true; out.selfLabel = 'I know how!'; out.selfBtn = () => { this.ac(); this.snd('pop'); this.setState({ quick: true }); }; }\n", 1),
+    ('box-shadow:0 6px 0 oklch(0.85 0.05 130);white-space:nowrap;">I can do it!</button>',
+     'box-shadow:0 6px 0 oklch(0.85 0.05 130);white-space:nowrap;">{{ selfLabel }}</button>', 1),
+    ("    if (SnailyNative.reduced()) { this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); else this.unlock(); }, 1500); return; }\n",
+     "    if (SnailyNative.reduced() || (this.state.quick && this.state.mode === 'practice')) { this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); else this.unlock(); }, 1500); return; }\n", 1),
     # Guess and check: Snaily says "Dot has 40 flies", not "40 in the Dot".
     ("model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot' },", "model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot', unit: 'seeds' },", 1),
     ("model: { type: 'guess', s, d, small: sh(N2), big: sh(N1) },", "model: { type: 'guess', s, d, small: sh(N2), big: sh(N1), unit: 'flies' },", 1),
