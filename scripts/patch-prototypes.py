@@ -83,6 +83,20 @@ STORY = [
      "    if (SnailyNative.reduced()) { this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); else this.unlock(); }, 1500); return; }\n", 1),
     ('<a href="Snaily Number Garden.dc.html" style="height:44px;', '<a href="index.html" aria-label="Home" style="height:44px;', 1),
     (">Hungry Snaily Math ›</a>", ">‹ Home</a>", 1),
+    # Guess and check: Snaily says "Dot has 40 flies", not "40 in the Dot".
+    ("model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot' },", "model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot', unit: 'seeds' },", 1),
+    ("model: { type: 'guess', s, d, small: sh(N2), big: sh(N1) },", "model: { type: 'guess', s, d, small: sh(N2), big: sh(N1), unit: 'flies' },", 1),
+    ("    const m = sto.model, g = this.state.guesses, gp = this.state.gp || 0;\n"
+     "    if (gp === 1) { const x = g[g.length - 1]; return `${x} in the ${m.small}. The ${m.big} has ${m.d} more: ${x} + ${m.d} = ?`; }",
+     "    const m = sto.model, g = this.state.guesses, gp = this.state.gp || 0;\n"
+     "    const nm = n => /pot$/.test(n) ? 'the ' + n : n, cap = t => t[0].toUpperCase() + t.slice(1), u = m.unit || 'things';\n"
+     "    if (gp === 1) { const x = g[g.length - 1]; return `${cap(nm(m.small))} has ${x} ${u}. ${cap(nm(m.big))} has ${m.d} more: ${x} + ${m.d} = ?`; }", 1),
+    ("`Let's guess and check! I'll guess the ${m.small} first. Tap “Show me”.` : `Guess how many for ${m.small}. Type a number and tap ✓. I'll check it!`",
+     "`Let's guess and check! First I'll guess how many ${u} ${nm(m.small)} has. Tap “Show me”.` : `Guess how many ${u} ${nm(m.small)} has. Type a number and tap ✓. I'll check it!`", 1),
+    # No leaf bursts (they popped up away from what the child was doing).
+    ("  burst(x, y, n = 16, small, cols) {\n", "  burst(x, y, n = 16, small, cols) { return;\n", 1),
+    # Snaily talks 10% slower.
+    ("u.rate = 0.88; u.volume = 1;", "u.rate = 0.79; u.volume = 1;", 1),
 ]
 
 GARDEN = [
@@ -98,6 +112,34 @@ GARDEN = [
     ('<a href="Snaily Story World.dc.html" title="Back to Snaily\'s map"', '<a href="index.html" title="Home" aria-label="Home"', 1),
     (">‹ Map</a>", ">‹ Home</a>", 1),
     ('<a href="Snaily Story World.dc.html" style="margin-top:4px', '<a href="story.html" style="margin-top:4px', 1),
+    # Real base-ten proportions: a cube is one unit, a rod is 10 cubes long,
+    # a hundreds flat is 10 rods wide (the prototype's flat was only ~4 rods
+    # wide). Flats fan out like cards when several share the Hundreds column.
+    ("const DIM = { h: [84, 84], t: [20, 84], o: [22, 22] };",
+     "const DIM = { h: [140, 140], t: [14, 140], o: [14, 14] };\nlet HN = 1;", 1),
+    ("  if (k === 'h') return [x + 14 + (i % 3) * 88, zy + 4 + Math.floor(i / 3) * 90];\n"
+     "  if (k === 't') return [x + 22 + i * 21, zy + 4];\n"
+     "  return [x + 80 + (i % 5) * 26, zy + 6 + Math.floor(i / 5) * 26];",
+     "  if (k === 'h') { const st = HN > 1 ? Math.min(146, (COLW - 30 - 140) / (HN - 1)) : 0, dy = HN > 1 ? Math.min(8, 30 / (HN - 1)) : 0; return [x + 15 + i * st, zy + 4 + i * dy]; }\n"
+     "  if (k === 't') return [x + 22 + i * 16, zy + 4];\n"
+     "  return [x + 94 + (i % 5) * 19, zy + 6 + Math.floor(i / 5) * 19];", 1),
+    ("function layout(prob, bs) {\n  const out = {};\n",
+     "function layout(prob, bs) {\n  const out = {};\n  HN = Math.max(1, prob.A[0] + (prob.type === 'add' ? prob.B[0] + (prob.ids.h.C ? 1 : 0) : 0));\n", 1),
+    ("else if (p.k === 't') bg = `repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.16) 7px 8px),${c}`;",
+     "else if (p.k === 't') bg = `repeating-linear-gradient(180deg,transparent 0 12.6px,rgba(60,40,0,.16) 12.6px 13.6px),${c}`;", 1),
+    ("else bg = `repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),repeating-linear-gradient(90deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),${c}`;",
+     "else bg = `repeating-linear-gradient(180deg,transparent 0 12.6px,rgba(60,40,0,.14) 12.6px 13.6px),repeating-linear-gradient(90deg,transparent 0 12.6px,rgba(60,40,0,.14) 12.6px 13.6px),${c}`;", 1),
+    # "Meet the blocks" intro picture uses the same proportions.
+    ('<div style="width:84px;height:84px;box-sizing:border-box;border:2px solid oklch(0.64 0.14 55);border-radius:5px;background:repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),repeating-linear-gradient(90deg,transparent 0 7px,rgba(60,40,0,.14) 7px 8px),',
+     '<div style="width:140px;height:140px;box-sizing:border-box;border:2px solid oklch(0.64 0.14 55);border-radius:5px;background:repeating-linear-gradient(180deg,transparent 0 12.6px,rgba(60,40,0,.14) 12.6px 13.6px),repeating-linear-gradient(90deg,transparent 0 12.6px,rgba(60,40,0,.14) 12.6px 13.6px),', 1),
+    ('<div style="width:20px;height:84px;box-sizing:border-box;border:2px solid oklch(0.56 0.11 240);border-radius:5px;background:repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,40,0,.16) 7px 8px),',
+     '<div style="width:14px;height:140px;box-sizing:border-box;border:2px solid oklch(0.56 0.11 240);border-radius:5px;background:repeating-linear-gradient(180deg,transparent 0 12.6px,rgba(60,40,0,.16) 12.6px 13.6px),', 1),
+    ('<div style="width:22px;height:22px;box-sizing:border-box;border:2px solid oklch(0.6 0.13 148);border-radius:6px;',
+     '<div style="width:14px;height:14px;box-sizing:border-box;border:2px solid oklch(0.6 0.13 148);border-radius:4px;', 1),
+    # No leaf bursts (they popped up away from what the child was doing).
+    ("  burst(x, y, n = 16, small) {\n", "  burst(x, y, n = 16, small) { return;\n", 1),
+    # Snaily talks 10% slower.
+    ("u.rate = 0.88; u.volume = 1;", "u.rate = 0.79; u.volume = 1;", 1),
 ]
 
 # Regex removals: (pattern, expected_count). Removes the voice pickers so

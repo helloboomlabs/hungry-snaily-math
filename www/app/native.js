@@ -116,7 +116,7 @@
     var cfg = window.SNAILY_CONFIG || {};
     return cfg.kidVoiceOnline !== false && navigator.onLine !== false;
   }
-  var KID_RATE = 1.35;
+  var KID_RATE = 1.215; // 10% slower than the prototype's 1.35
   function kidUrl(q) { return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q); }
 
   // Browsers (iPhone/iPad Safari above all) only let a page play sound after
@@ -193,7 +193,7 @@
     if (kid.el && !kid.el.paused && !unlocking) { try { kid.el.pause(); } catch (e) {} }
   }
   function sayDevice(t) {
-    try { var u = new SpeechSynthesisUtterance(t), v = anyVoice(); if (v) u.voice = v; u.pitch = 1.65; u.rate = 0.88; speechSynthesis.speak(u); } catch (e) {}
+    try { var u = new SpeechSynthesisUtterance(t), v = anyVoice(); if (v) u.voice = v; u.pitch = 1.65; u.rate = 0.79; speechSynthesis.speak(u); } catch (e) {}
   }
   // Speaks a line in Snaily's voice (home screen and break screen).
   function say(t) {

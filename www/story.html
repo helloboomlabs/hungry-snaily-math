@@ -843,7 +843,7 @@ const T = {
         calcs: [C('d', `How much shorter is ${sh(N2)}'s bar? ${a} − ${b}.`)], sentence: `${sh(N2)} picked ${a - b} fewer berries!` }; },
     i => { const x = R(4 + 3 * i, 9 + 5 * i), d = R(2, 6 + 2 * i), s = 2 * x + d;
       return { text: `Two flower pots have ${s} seeds altogether. The red pot has ${d} more seeds than the blue pot. How many seeds are in the red pot?`, method: 'Guess and check', tip: 'Guess, check, then fix your guess.',
-        model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot' },
+        model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot', unit: 'seeds' },
         slots: { tot: S(s, 'given', 'altogether'), more: S(d, 'given', 'more in red'), big: S(x + d, 'calc', 'red pot') },
         calcs: [{ type: 'guess' }, C('big', `The blue pot has ${x}. The red pot has ${d} more: ${x} + ${d}.`)], sentence: `The red pot has ${x + d} seeds!` }; },
     i => { const x = R(4 + 3 * i, 9 + 5 * i), d = R(2, 6 + 2 * i), s = 2 * x + d;
@@ -870,7 +870,7 @@ const T = {
         calcs: [C('b', `Step 1: find ${sh(N2)}'s stickers. ${a} + ${d}.`), C('t', `Step 2: join both bars. ${a} + ${a + d}.`)], sentence: `They have ${2 * a + d} stickers altogether!` }; },
     i => { const x = R(5 + 4 * i, 12 + 6 * i), d = R(2, 5 + 2 * i), s = 2 * x + d, [N1, N2] = two();
       return { text: `${N1} and ${N2} caught ${s} flies altogether. ${sh(N1)} caught ${d} more flies than ${sh(N2)}. How many flies did ${sh(N1)} catch?`, method: 'Guess and check', tip: 'Guess, check, then fix your guess.',
-        model: { type: 'guess', s, d, small: sh(N2), big: sh(N1) },
+        model: { type: 'guess', s, d, small: sh(N2), big: sh(N1), unit: 'flies' },
         slots: { tot: S(s, 'given', 'altogether'), more: S(d, 'given', 'more for ' + sh(N1)), big: S(x + d, 'calc', sh(N1)) },
         calcs: [{ type: 'guess' }, C('big', `${sh(N2)} caught ${x}. ${sh(N1)} caught ${d} more: ${x} + ${d}.`)], sentence: `${sh(N1)} caught ${x + d} flies!` }; },
     i => { const a = R(30 + 30 * i, 90 + 60 * i), d = R(8, a - 15), [N] = two();
@@ -1572,7 +1572,7 @@ class Component extends DCLogic {
     const pv = this.pickVoice();
     if (!pv) { this.speaking = false; this.setState({ talking: false }); return; }
     const u = new SpeechSynthesisUtterance(t), kid = /\bAna\b|child|kid/i.test(pv.name);
-    u.pitch = this.props.voicePitch ?? (kid ? 1.2 : 1.65); u.rate = 0.88; u.volume = 1; u.voice = pv;
+    u.pitch = this.props.voicePitch ?? (kid ? 1.2 : 1.65); u.rate = 0.79; u.volume = 1; u.voice = pv;
     u.onstart = () => this.setState({ talking: true });
     u.onend = u.onerror = () => this.onSpeechEnd(u);
     this.curU = u; this.speaking = true; ss.speak(u);
@@ -1777,7 +1777,7 @@ class Component extends DCLogic {
     if (k === 'medal') { [784, 988, 1175, 1568].forEach((f, i) => this.bell(f, i * 0.11, 0.08, 1.4)); [392, 494, 587].forEach((f, i) => this.mallet(f, i * 0.11, 0.1, 0.8)); }
     if (k === 'end') { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => this.mallet(f, i * 0.14, 0.12, 0.8)); this.bell(2093, 1.0, 0.06, 1.8); }
   }
-  burst(x, y, n = 16, small, cols) {
+  burst(x, y, n = 16, small, cols) { return;
     const id = Math.random().toString(36).slice(2);
     const parts = Array.from({ length: n }, (_, i) => {
       const a = small ? -Math.PI * (0.1 + Math.random() * 0.8) : (i / n) * Math.PI * 2 + Math.random() * 0.4, r = small ? 30 + Math.random() * 50 : 90 + Math.random() * 110;
@@ -1965,9 +1965,10 @@ class Component extends DCLogic {
   }
   guessSay(sto) {
     const m = sto.model, g = this.state.guesses, gp = this.state.gp || 0;
-    if (gp === 1) { const x = g[g.length - 1]; return `${x} in the ${m.small}. The ${m.big} has ${m.d} more: ${x} + ${m.d} = ?`; }
+    const nm = n => /pot$/.test(n) ? 'the ' + n : n, cap = t => t[0].toUpperCase() + t.slice(1), u = m.unit || 'things';
+    if (gp === 1) { const x = g[g.length - 1]; return `${cap(nm(m.small))} has ${x} ${u}. ${cap(nm(m.big))} has ${m.d} more: ${x} + ${m.d} = ?`; }
     if (gp === 2) { const x = g[g.length - 1]; return `Now the total: ${x} + ${x + m.d} = ? Is it ${m.s}?`; }
-    if (!g.length) return sto.guided ? `Let's guess and check! I'll guess the ${m.small} first. Tap “Show me”.` : `Guess how many for ${m.small}. Type a number and tap ✓. I'll check it!`;
+    if (!g.length) return sto.guided ? `Let's guess and check! First I'll guess how many ${u} ${nm(m.small)} has. Tap “Show me”.` : `Guess how many ${u} ${nm(m.small)} has. Type a number and tap ✓. I'll check it!`;
     const last = g[g.length - 1], tot = 2 * last + m.d;
     return `${last} + ${last + m.d} = ${tot}. ` + (tot > m.s ? `Too many! ${sto.guided ? 'Next I guess smaller.' : 'Try a smaller number.'}` : `Too few! ${sto.guided ? 'Next I guess bigger.' : 'Try a bigger number.'}`);
   }
