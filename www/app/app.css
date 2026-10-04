@@ -92,3 +92,15 @@ html.game button::after, .sn-key::after, .gear::after, .p-tab::after, .toggle::b
 .sn-spot:hover .sn-tip { opacity: 1; transform: none; }
 @media (hover: none) { .sn-tip { display: none; } }
 html.rm .sn-tip { transition: opacity .15s ease; transform: none; }
+
+/* night time (Snaily sleeps; the game starts again in the morning) */
+.sn-night { background: linear-gradient(180deg, #16223f 0%, #26365f 70%, #2f4a4a 100%); }
+.sn-night .sn-card { background: #f4f1ff; box-shadow: 0 6px 0 #b9b2dd, 0 0 60px rgba(255, 244, 190, .25); }
+.sn-night .sn-break-title { color: #3b3f86; }
+.sn-night .sn-zzz { color: #7a7fd0; }
+.sn-night-left { font-weight: 700; color: #3b3f86; font-variant-numeric: tabular-nums; }
+.sn-moon {
+  position: absolute; top: max(28px, var(--sa-t)); right: 12%; width: 84px; height: 84px; border-radius: 50%;
+  background: #fff4be; box-shadow: 0 0 40px 10px rgba(255, 244, 190, .35);
+}
+.sn-moon::after { content: ''; position: absolute; left: 24px; top: -6px; width: 84px; height: 84px; border-radius: 50%; background: #1d2a4a; }

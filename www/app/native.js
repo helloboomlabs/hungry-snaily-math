@@ -26,7 +26,8 @@
     sound: true, voice: true, haptics: true, reduceMotion: false,
     speed: 'normal', autoAdvance: true,          // Number Garden
     trickNumbers: true, mealMinutes: 20,         // Story World
-    timeLimit: 0                                 // minutes, 0 = off
+    timeLimit: 0,                                // old break reminder (no longer used)
+    bedtime: 60                                  // minutes of play before night, 0 = off
   };
   function getSettings() {
     var s = {};
@@ -158,7 +159,13 @@
   function speakKid(t, cb) {
     cb = cb || {};
     var my = ++kid.token;
-    var parts = String(t).split(/(?<=[.!?])\s+/).map(function (x) { return x.trim(); }).filter(Boolean), k = 0;
+    var parts = [], k = 0, tries = 0;
+    // Google reads at most ~200 characters per request: split long sentences at commas.
+    String(t).split(/(?<=[.!?])\s+/).forEach(function (x) {
+      x = x.trim(); if (!x) return;
+      while (x.length > 180) { var c = x.lastIndexOf(', ', 180); if (c < 40) c = x.lastIndexOf(' ', 180); parts.push(x.slice(0, c + 1).trim()); x = x.slice(c + 1).trim(); }
+      if (x) parts.push(x);
+    });
     var alive = function () { return my === kid.token && (!cb.live || cb.live()); };
     if (!kid.unlocked) {
       kid.pending = function () { if (alive()) speakKid(t, cb); };
@@ -169,8 +176,10 @@
     function next() {
       if (!alive()) return;
       if (k >= parts.length) { if (cb.end) cb.end(); return; }
-      a.onended = function () { if (!alive()) return; if (cb.gap) cb.gap(); k++; setTimeout(next, 380); };
-      a.onerror = function () { if (!alive()) return; if (cb.fail) cb.fail(parts.slice(k).join(' ')); };
+      a.onended = function () { if (!alive()) return; if (cb.gap) cb.gap(); k++; tries = 0; setTimeout(next, 380); };
+      // A sentence that fails to load (busy network) is tried again before
+      // falling back to the device voice, so Snaily doesn't stop mid-line.
+      a.onerror = function () { if (!alive()) return; if (tries++ < 2) { setTimeout(next, 400 * tries); return; } tries = 0; if (cb.fail) cb.fail(parts.slice(k).join(' ')); };
       a.onplaying = function () { a.playbackRate = KID_RATE; if (cb.start) cb.start(); };
       a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
       a.defaultPlaybackRate = KID_RATE; a.playbackRate = KID_RATE;
@@ -353,38 +362,55 @@
     }
     return total;
   }
-  var breakEl = null;
+  // Night time: after `bedtime` minutes of play it gets dark and Snaily goes
+  // to sleep. Everything is locked for 5 minutes, then the game starts again.
+  // A grown-up can wake Snaily early (hold + adult question).
+  var SLEEP_MS = 5 * 60 * 1000;
+  var breakEl = null, nightTimer = 0;
   function breakUntil() { return +localStorage.getItem('snaily-break-until') || 0; }
+  function mmss(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function showBreak() {
     if (breakEl) return;
     try { speechSynthesis.cancel(); } catch (e) {}
-    var btn = h('button', { 'class': 'sn-btn sn-btn-ghost sn-hold', 'aria-label': 'Grown-up: hold to unlock' }, [
-      h('span', { 'class': 'sn-ring' }), 'Grown-up? Hold to unlock'
+    var btn = h('button', { 'class': 'sn-btn sn-btn-ghost sn-hold', 'aria-label': 'Grown-up: hold to wake Snaily' }, [
+      h('span', { 'class': 'sn-ring' }), 'Grown-up? Hold to wake Snaily'
     ]);
-    breakEl = h('div', { 'class': 'sn-overlay sn-break', role: 'dialog', 'aria-modal': 'true' }, [
+    var left = h('div', { 'class': 'sn-break-sub sn-night-left', text: '' });
+    breakEl = h('div', { 'class': 'sn-overlay sn-break sn-night', role: 'dialog', 'aria-modal': 'true' }, [
+      h('div', { 'class': 'sn-moon', 'aria-hidden': 'true' }),
       h('div', { 'class': 'sn-card' }, [
         h('div', { 'class': 'sn-zzz', text: 'z z z' }),
-        h('div', { 'class': 'sn-break-title', text: 'Snaily is sleepy!' }),
-        h('div', { 'class': 'sn-break-sub', text: "Time for a break. Let's play again later." }),
+        h('div', { 'class': 'sn-break-title', text: 'Night time!' }),
+        h('div', { 'class': 'sn-break-sub', text: 'Snaily is fast asleep. Shhh!' }),
+        left,
         btn
       ])
     ]);
+    function upd() {
+      var ms = breakUntil() - Date.now();
+      left.textContent = 'Morning comes in ' + mmss(ms);
+      if (ms <= 0) wake(true);
+    }
+    upd(); nightTimer = setInterval(upd, 1000);
     holdButton(btn, 2000, function () {
-      parentGate().then(function (ok) {
-        if (!ok) return;
-        localStorage.setItem('snaily-break-until', '0');
-        localStorage.setItem('snaily-session-secs', '0');
-        hideBreak();
-      });
+      parentGate().then(function (ok) { if (ok) wake(false); });
     });
     document.body.appendChild(breakEl);
-    setTimeout(function () { say("I'm so sleepy! Time for a break. Let's play again later."); }, 400);
+    setTimeout(function () { say("Yawn! It's night time. Good night!"); }, 400);
   }
-  function hideBreak() { if (breakEl) { breakEl.remove(); breakEl = null; } }
+  // morning: the game starts again from the beginning (a grown-up's early
+  // wake-up just carries on where the child was).
+  function wake(restart) {
+    localStorage.setItem('snaily-break-until', '0');
+    localStorage.setItem('snaily-session-secs', '0');
+    hideBreak();
+    if (restart && isGame) location.reload();
+  }
+  function hideBreak() { clearInterval(nightTimer); if (breakEl) { breakEl.remove(); breakEl = null; } }
   function tick() {
     var bu = breakUntil();
     if (bu && Date.now() < bu) { showBreak(); return; }
-    if (bu && Date.now() >= bu) { localStorage.setItem('snaily-break-until', '0'); localStorage.setItem('snaily-session-secs', '0'); hideBreak(); }
+    if (bu && Date.now() >= bu) { wake(!!breakEl); }
     if (document.hidden || !isGame) return;
     var days = playDays(), k = today();
     days[k] = (days[k] || 0) + TICK;
@@ -393,12 +419,14 @@
     localStorage.setItem('snaily-play-days', JSON.stringify(days));
     var sess = (+localStorage.getItem('snaily-session-secs') || 0) + TICK;
     localStorage.setItem('snaily-session-secs', String(sess));
-    var lim = +getSettings().timeLimit || 0;
+    var lim = +getSettings().bedtime || 0;
     if (lim > 0 && sess >= lim * 60) {
-      localStorage.setItem('snaily-break-until', String(Date.now() + 30 * 60 * 1000));
+      localStorage.setItem('snaily-break-until', String(Date.now() + SLEEP_MS));
       showBreak();
     }
   }
+  // minutes of play left before night (for the parent area).
+  function bedtimeLeft() { var lim = +getSettings().bedtime || 0; return lim ? Math.max(0, lim * 60 - (+localStorage.getItem('snaily-session-secs') || 0)) : -1; }
   document.addEventListener('DOMContentLoaded', function () {
     tick(); setInterval(tick, TICK * 1000);
   });
@@ -421,6 +449,6 @@
     anyVoice: anyVoice, fx: fx, buzz: buzz, say: say, stopSay: stopSay, kidVoiceOn: kidVoiceOn, speakKid: speakKid, stats: stats, solved: solved,
     reduced: function () { return document.documentElement.classList.contains('rm'); },
     parentGate: parentGate, holdButton: holdButton, h: h,
-    weekSeconds: weekSeconds, breakUntil: breakUntil, showBreak: showBreak
+    weekSeconds: weekSeconds, breakUntil: breakUntil, showBreak: showBreak, bedtimeLeft: bedtimeLeft
   };
 })();

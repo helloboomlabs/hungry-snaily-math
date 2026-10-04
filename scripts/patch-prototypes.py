@@ -83,6 +83,30 @@ STORY = [
      "    if (SnailyNative.reduced()) { this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); else this.unlock(); }, 1500); return; }\n", 1),
     ('<a href="Snaily Number Garden.dc.html" style="height:44px;', '<a href="index.html" aria-label="Home" style="height:44px;', 1),
     (">Hungry Snaily Math ›</a>", ">‹ Home</a>", 1),
+    # "take away 0" reads oddly: say "take away none".
+    ("say: B[c] > 0 ? `How many ${U[c]} are left?` : `${UC[c]}: take away 0. How many ${U[c]} are left?`, hint: `${tops[c]} take away ${B[c]}.`",
+     "say: B[c] > 0 ? `How many ${U[c]} are left?` : `${UC[c]}: take away none. How many ${U[c]} are left?`, hint: `${tops[c]} take away ${B[c] || 'none'}.`", 1),
+    # Work it out blocks: real base-ten proportions (flat = 10 rods wide).
+    ("const [bw, bh, per, gx] = c === 0 ? [28, 28, 5, 4] : c === 1 ? [8, 62, 10, 5] : [13, 13, 10, 3];",
+     "const [bw, bh, per, gx] = c === 0 ? [56, 56, 3, 3] : c === 1 ? [6, 56, 10, 4] : [9, 9, 10, 3];", 1),
+    ("c === 1 ? `repeating-linear-gradient(180deg,transparent 0 5px,rgba(60,40,0,.16) 5px 6px),${col}` : `repeating-linear-gradient(180deg,transparent 0 5px,rgba(60,40,0,.14) 5px 6px),repeating-linear-gradient(90deg,transparent 0 5px,rgba(60,40,0,.14) 5px 6px),${col}`;",
+     "c === 1 ? `repeating-linear-gradient(180deg,transparent 0 4.2px,rgba(60,40,0,.16) 4.2px 5.2px),${col}` : `repeating-linear-gradient(180deg,transparent 0 4.2px,rgba(60,40,0,.14) 4.2px 5.2px),repeating-linear-gradient(90deg,transparent 0 4.2px,rgba(60,40,0,.14) 4.2px 5.2px),${col}`;", 1),
+    ("for (let q = 0; q < (col.bq || 0); q++) add(x0 + 88 - (per * (bw + gx) - gx) / 2 + (q % per) * (bw + gx), 206 + Math.floor(q / per)",
+     "for (let q = 0; q < (col.bq || 0); q++) add(x0 + 88 - (per * (bw + gx) - gx) / 2 + (q % per) * (bw + gx), 226 + Math.floor(q / per)", 1),
+    # Treat swap list: tap a collectable to go to the place where you find it.
+    ('        <div style="display:flex;align-items:center;gap:12px;height:33px;padding:0 10px;border-bottom:4px solid oklch(0.78 0.08 65);">',
+     '        <div onClick="{{ r.go }}" style="display:flex;align-items:center;gap:12px;height:33px;padding:0 10px;border-bottom:4px solid oklch(0.78 0.08 65);cursor:pointer;" style-hover="background:oklch(0.97 0.04 80);">', 1),
+    ("swap: () => this.swapTreat(p.key, i),",
+     "swap: e => { if (e && e.stopPropagation) e.stopPropagation(); this.swapTreat(p.key, i); }, go: () => this.enterSpot(i, 'story'),", 1),
+    # Each potty trip also gives a collectable (from the place you are at).
+    ('      const say2 = "Ahh, all better! You earned a medal!";\n',
+     "      const pk = SPOTS[this.state.screen === 'story' && this.state.spot != null ? this.state.spot : Math.floor(Math.random() * SPOTS.length)];\n"
+     "      const say2 = `Ahh, all better! You earned a medal and ${/^[aeiou]/.test(pk.one) ? 'an' : 'a'} ${pk.one}!`;\n", 1),
+    ("this.setState(s => ({ potty: 'back', pottySay: say2, medals: s.medals + 1, medalPop: Date.now(), happy: s.happy + 1, leaves: 0 }), () => this.save());",
+     "this.setState(s => ({ potty: 'back', pottySay: say2, medals: s.medals + 1, medalPop: Date.now(), happy: s.happy + 1, leaves: 0, coll: { ...s.coll, [pk.key]: (s.coll[pk.key] || 0) + 1 } }), () => this.save());", 1),
+    # Meal clock: "Next meal in 12:34" instead of "Snaily day 1 / Eat in 12:34".
+    ("out.dayTxt = `Snaily day ${S0.day || 1}`;", "out.dayTxt = S0.meal ? 'Snaily is hungry' : 'Next meal in';", 1),
+    ("'Eating time!' : `Eat in ${Math.floor(sec / 60)}", "'Eating time!' : `${Math.floor(sec / 60)}", 1),
     # Guess and check: Snaily says "Dot has 40 flies", not "40 in the Dot".
     ("model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot' },", "model: { type: 'guess', s, d, small: 'blue pot', big: 'red pot', unit: 'seeds' },", 1),
     ("model: { type: 'guess', s, d, small: sh(N2), big: sh(N1) },", "model: { type: 'guess', s, d, small: sh(N2), big: sh(N1), unit: 'flies' },", 1),
@@ -112,6 +136,15 @@ GARDEN = [
     ('<a href="Snaily Story World.dc.html" title="Back to Snaily\'s map"', '<a href="index.html" title="Home" aria-label="Home"', 1),
     (">‹ Map</a>", ">‹ Home</a>", 1),
     ('<a href="Snaily Story World.dc.html" style="margin-top:4px', '<a href="story.html" style="margin-top:4px', 1),
+    # "take away 0" reads oddly: say "take away none".
+    ("push(just ? `Take away ${B[ci]}.` : `${cap(nm)}: take away ${B[ci]}.`);",
+     "push(just ? `Take away ${B[ci] || 'none'}.` : `${cap(nm)}: take away ${B[ci] || 'none'}.`);", 1),
+    ("hint: `${cur[ci]} take away ${B[ci]}.`", "hint: `${cur[ci]} take away ${B[ci] || 'none'}.`", 1),
+    # Each potty trip also gives a collectable for the Story Garden shelf.
+    ('      const say2 = "Ahh, all better! You earned a medal!";\n',
+     "      const IT = [['pond', 'shell'], ['hill', 'seed'], ['bridge', 'gem'], ['tree', 'acorn'], ['bakery', 'cookie'], ['market', 'coin'], ['shed', 'flower pot'], ['clock', 'star'], ['orchard', 'apple']], pk = IT[Math.floor(Math.random() * IT.length)];\n"
+     "      try { const cl = JSON.parse(localStorage.getItem('snaily-sw-coll') || '{}') || {}; cl[pk[0]] = (cl[pk[0]] || 0) + 1; localStorage.setItem('snaily-sw-coll', JSON.stringify(cl)); } catch (e) {}\n"
+     "      const say2 = `Ahh, all better! You earned a medal and ${/^[aeiou]/.test(pk[1]) ? 'an' : 'a'} ${pk[1]} for the Story Garden!`;\n", 1),
     # Real base-ten proportions: a cube is one unit, a rod is 10 cubes long,
     # a hundreds flat is 10 rods wide (the prototype's flat was only ~4 rods
     # wide). Flats fan out like cards when several share the Hundreds column.

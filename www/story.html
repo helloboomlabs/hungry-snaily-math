@@ -231,7 +231,7 @@ button{font-family:inherit;}
         </div>
       </div>
       <sc-for list="{{ shelf }}" as="r" hint-placeholder-count="8">
-        <div style="display:flex;align-items:center;gap:12px;height:33px;padding:0 10px;border-bottom:4px solid oklch(0.78 0.08 65);">
+        <div onClick="{{ r.go }}" style="display:flex;align-items:center;gap:12px;height:33px;padding:0 10px;border-bottom:4px solid oklch(0.78 0.08 65);cursor:pointer;" style-hover="background:oklch(0.97 0.04 80);">
           <div style="width:34px;display:flex;justify-content:center;align-items:center;"><div style="{{ r.itemSt }}"></div></div>
           <div style="flex:1;display:flex;align-items:center;gap:6px;font-size:17px;font-weight:600;color:oklch(0.38 0.05 60);"><div>{{ r.label }}</div><div style="font-size:14px;color:oklch(0.55 0.05 60);">→</div><div style="{{ r.treatSt }}"></div></div>
           <sc-if value="{{ r.can }}" hint-placeholder-val="{{ false }}">
@@ -584,7 +584,7 @@ function mkBlocks(a, op, b) {
         trade(c - 1, `Break 1 ${U1[c - 1]} into 10 ${U[c]}. Tap “Trade!”`);
       }
       if (B[c] > 0) { D.cols[c].g = B[c]; note(`${UC[c]}: take away ${B[c]}. These ${B[c] === 1 ? 'one goes' : B[c] + ' go'} away!`, c); D.cols[c].g = 0; D.cols[c].x = B[c]; }
-      steps.push({ kind: 'type', col: c, ans: String(tops[c] - B[c]), say: B[c] > 0 ? `How many ${U[c]} are left?` : `${UC[c]}: take away 0. How many ${U[c]} are left?`, hint: `${tops[c]} take away ${B[c]}.`, d: clone(D) });
+      steps.push({ kind: 'type', col: c, ans: String(tops[c] - B[c]), say: B[c] > 0 ? `How many ${U[c]} are left?` : `${UC[c]}: take away none. How many ${U[c]} are left?`, hint: `${tops[c]} take away ${B[c] || 'none'}.`, d: clone(D) });
       D.ans[c] = String(tops[c] - B[c]);
     }
   }
@@ -643,7 +643,7 @@ function mkLadder(o) {
 }
 const blockSt = (c, k, struck) => {
   const [col, e] = k === 'A' ? PAL.A : k === 'B' ? PAL.B : PAL.G;
-  const bg = c === 2 ? `linear-gradient(140deg,rgba(255,255,255,.5),rgba(255,255,255,0) 55%),${col}` : c === 1 ? `repeating-linear-gradient(180deg,transparent 0 5px,rgba(60,40,0,.16) 5px 6px),${col}` : `repeating-linear-gradient(180deg,transparent 0 5px,rgba(60,40,0,.14) 5px 6px),repeating-linear-gradient(90deg,transparent 0 5px,rgba(60,40,0,.14) 5px 6px),${col}`;
+  const bg = c === 2 ? `linear-gradient(140deg,rgba(255,255,255,.5),rgba(255,255,255,0) 55%),${col}` : c === 1 ? `repeating-linear-gradient(180deg,transparent 0 4.2px,rgba(60,40,0,.16) 4.2px 5.2px),${col}` : `repeating-linear-gradient(180deg,transparent 0 4.2px,rgba(60,40,0,.14) 4.2px 5.2px),repeating-linear-gradient(90deg,transparent 0 4.2px,rgba(60,40,0,.14) 4.2px 5.2px),${col}`;
   return { background: bg, border: `2px solid ${struck ? 'oklch(0.7 0.17 25)' : e}`, borderRadius: 3, opacity: struck ? 0.28 : 1, boxShadow: '0 2px 0 rgba(60,50,20,.12)', transition: 'opacity .5s' };
 };
 function buildWork(w, typed) {
@@ -696,7 +696,7 @@ function buildWork(w, typed) {
       const x0 = 8 + c * 184, act = D.active === c, col = D.cols[c], bl = col.bl;
       add(x0, 0, 176, 314, { borderRadius: 18, background: act ? 'oklch(0.96 0.05 140)' : 'oklch(0.985 0.01 100)', border: act ? '3px solid oklch(0.72 0.13 145)' : '3px solid oklch(0.93 0.025 110)', transition: 'all .3s' });
       add(x0, 6, 176, 24, { ...CEN, fontSize: 18, fontWeight: 700, color: 'oklch(0.4 0.06 150)' }, UC[c]);
-      const [bw, bh, per, gx] = c === 0 ? [28, 28, 5, 4] : c === 1 ? [8, 62, 10, 5] : [13, 13, 10, 3];
+      const [bw, bh, per, gx] = c === 0 ? [56, 56, 3, 3] : c === 1 ? [6, 56, 10, 4] : [9, 9, 10, 3];
       let ci = 0, prev = null, y = 38;
       bl.forEach((k, i) => {
         if (prev !== null && (k !== prev || ci >= per)) { y += bh + 6 + (k !== prev ? 4 : 0); ci = 0; }
@@ -705,7 +705,7 @@ function buildWork(w, typed) {
         add(x0 + 88 - (per * (bw + gx) - gx) / 2 + ci * (bw + gx), y, bw, bh, { ...blockSt(c, k, i >= bl.length - col.x), ...(gl ? { border: '3px solid oklch(0.62 0.2 25)', boxShadow: '0 0 0 3px oklch(0.85 0.1 25)' } : {}) });
         ci++;
       });
-      for (let q = 0; q < (col.bq || 0); q++) add(x0 + 88 - (per * (bw + gx) - gx) / 2 + (q % per) * (bw + gx), 206 + Math.floor(q / per) * (bh + 6), bw, bh, blockSt(c, 'B', false));
+      for (let q = 0; q < (col.bq || 0); q++) add(x0 + 88 - (per * (bw + gx) - gx) / 2 + (q % per) * (bw + gx), 226 + Math.floor(q / per) * (bh + 6), bw, bh, blockSt(c, 'B', false));
     });
     const cx = [636, 708, 780], cw = 64;
     ['H', 'T', 'O'].forEach((l, c) => add(cx[c], 0, cw, 26, { ...CEN, fontSize: 16, fontWeight: 600, color: 'oklch(0.55 0.04 150)', letterSpacing: 1 }, l));
@@ -1693,9 +1693,10 @@ class Component extends DCLogic {
       for (let i = 0; i < FULL; i++) setTimeout(() => { this.setState(s => ({ leaves: Math.max(0, s.leaves - 1) })); this.snd('plop'); this.burst(1135, 640, 4, true); }, 300 + i * 470);
     }, 1900);
     setTimeout(() => {
-      const say2 = "Ahh, all better! You earned a medal!";
+      const pk = SPOTS[this.state.screen === 'story' && this.state.spot != null ? this.state.spot : Math.floor(Math.random() * SPOTS.length)];
+      const say2 = `Ahh, all better! You earned a medal and ${/^[aeiou]/.test(pk.one) ? 'an' : 'a'} ${pk.one}!`;
       this.snd('flush'); setTimeout(() => this.snd('medal'), 700);
-      this.setState(s => ({ potty: 'back', pottySay: say2, medals: s.medals + 1, medalPop: Date.now(), happy: s.happy + 1, leaves: 0 }), () => this.save());
+      this.setState(s => ({ potty: 'back', pottySay: say2, medals: s.medals + 1, medalPop: Date.now(), happy: s.happy + 1, leaves: 0, coll: { ...s.coll, [pk.key]: (s.coll[pk.key] || 0) + 1 } }), () => this.save());
       this.speak(say2);
     }, 6900);
     setTimeout(() => {
@@ -1998,7 +1999,7 @@ class Component extends DCLogic {
     out.noMedals = md === 0; out.moreMedals = md > 3; out.moreMedalsTxt = '+' + (md - 3);
     out.medalBig = Array.from({ length: Math.min(md, 14) }, (_, i) => ({ i }));
     out.tummy = Array.from({ length: FULL }, (_, k) => ({ style: { width: 18, height: 18, borderRadius: '0 50%', boxSizing: 'border-box', background: k < S0.leaves ? 'oklch(0.72 0.14 145)' : 'oklch(0.95 0.025 130)', border: k < S0.leaves ? '2px solid oklch(0.6 0.13 150)' : '2px dashed oklch(0.82 0.05 140)', transform: k < S0.leaves ? 'scale(1.05)' : 'scale(.85)', transition: 'all .4s cubic-bezier(.34,1.6,.5,1)' } }));
-    out.shelf = SPOTS.map((p, i) => { const c = S0.coll[p.key] || 0; return { label: p.many, count: c >= 10 ? c : c + '/10', can: c >= 10, swap: () => this.swapTreat(p.key, i), treatSt: TREAT(TREAT_OF[p.key], 20), itemSt: ITEM(p.item, 26) }; });
+    out.shelf = SPOTS.map((p, i) => { const c = S0.coll[p.key] || 0; return { label: p.many, count: c >= 10 ? c : c + '/10', can: c >= 10, swap: e => { if (e && e.stopPropagation) e.stopPropagation(); this.swapTreat(p.key, i); }, go: () => this.enterSpot(i, 'story'), treatSt: TREAT(TREAT_OF[p.key], 20), itemSt: ITEM(p.item, 26) }; });
 
     out.spots = SPOTS.map((p, i) => ({ name: p.name, topic: p.topic, itemName: p.many, itemSt: ITEM(p.item, 24), treatName: TREAT_NAME[TREAT_OF[p.key]].toLowerCase(), treatSt: TREAT(TREAT_OF[p.key], 18), count: S0.coll[p.key] || 0, has: (S0.coll[p.key] || 0) > 0,
       wrap: { position: 'absolute', left: POS[i][0], top: POS[i][1], width: 180, height: 162 }, is: { [p.key]: true },
@@ -2076,8 +2077,8 @@ class Component extends DCLogic {
       out.plateCount = total; out.plateHas = total > 0; out.plateEmpty = !out.plateHas;
       out.plateIcons = have.slice(0, 3).map((k, j) => ({ style: { ...TREAT(k, 30), position: 'absolute', left: 6 + j * 16, top: 6 - (j === 1 ? 6 : 0) } }));
       const left = Math.max(0, (S0.nextMeal || 0) - (S0.now || Date.now())), sec = Math.ceil(left / 1000);
-      out.dayTxt = `Snaily day ${S0.day || 1}`;
-      out.mealTxt = S0.meal ? 'Eating time!' : `Eat in ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+      out.dayTxt = S0.meal ? 'Snaily is hungry' : 'Next meal in';
+      out.mealTxt = S0.meal ? 'Eating time!' : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
       out.mealTxtSt = { fontSize: 19, fontWeight: 700, color: S0.meal || sec <= 60 ? 'oklch(0.58 0.17 25)' : 'oklch(0.36 0.06 150)', fontVariantNumeric: 'tabular-nums' };
       out.plateOpen = !!S0.plateOpen && !S0.meal;
       out.togglePlate = () => { this.ac(); this.snd('tap'); this.setState(st => ({ plateOpen: !st.plateOpen })); };

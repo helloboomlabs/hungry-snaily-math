@@ -110,12 +110,17 @@ const store = await page.evaluate(() => __store);
 ok(store['snaily-sw-coll'] && JSON.parse(store['snaily-sw-coll']).pond === 1, 'progress mirrored to native storage');
 await sleep(4500);
 
-console.log('Break reminder');
-await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('snaily-settings')); s.timeLimit = 10; localStorage.setItem('snaily-settings', JSON.stringify(s)); localStorage.setItem('snaily-session-secs', '598'); });
+console.log('Night time');
+await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('snaily-settings')); s.bedtime = 10; localStorage.setItem('snaily-settings', JSON.stringify(s)); localStorage.setItem('snaily-session-secs', '598'); });
 await go('garden.html', 1500);
 ok(!!(await page.$('.sn-break')), 'game locks when the time limit is reached');
 await go('index.html', 600);
 ok(!!(await page.$('.sn-break')), 'home screen is locked too');
+await page.evaluate(() => localStorage.setItem('snaily-break-until', String(Date.now() + 2000)));
+await go('garden.html', 600);
+ok(!!(await page.$('.sn-night')), 'night screen shows the moon and countdown');
+await sleep(3500);
+ok(!(await page.$('.sn-break')) && (await page.evaluate(() => localStorage.getItem('snaily-session-secs'))) !== null, 'morning: the game starts again by itself');
 
 console.log('Restore after iOS clears web storage');
 await page.evaluate(() => { localStorage.clear(); });

@@ -539,8 +539,8 @@ function useRound(seed, level, round) {
         w.struck[ci - 1] = 1; w.marks[ci - 1] = String(cur[ci - 1]); w.struck[ci] = 1; w.marks[ci] = String(cur[ci]);
         push(`Crack! 1 ${SING[ci - 1]} became 10 ${nm}. Now there are ${cur[ci]}.`);
       }
-      bs.remove[k] = 1; push(just ? `Take away ${B[ci]}.` : `${cap(nm)}: take away ${B[ci]}.`);
-      bs.remove[k] = 2; push(`How many ${nm} are left?`, { type: 'digit', col: ci, ans: String(cur[ci] - B[ci]), hint: `${cur[ci]} take away ${B[ci]}.` });
+      bs.remove[k] = 1; push(just ? `Take away ${B[ci] || 'none'}.` : `${cap(nm)}: take away ${B[ci] || 'none'}.`);
+      bs.remove[k] = 2; push(`How many ${nm} are left?`, { type: 'digit', col: ci, ans: String(cur[ci] - B[ci]), hint: `${cur[ci]} take away ${B[ci] || 'none'}.` });
       w.ans[ci] = String(cur[ci] - B[ci]);
     }
     F(-1); push(`${a} − ${b} = ${a - b}. ${praise()}`);
@@ -734,7 +734,9 @@ class Component extends DCLogic {
       for (let i = 0; i < FULL; i++) setTimeout(() => { this.setState(s => ({ leaves: Math.max(0, s.leaves - 1) })); this.snd('plop'); this.burst(1135, 640, 4, true); }, 300 + i * 470);
     }, 1900);
     setTimeout(() => {
-      const say2 = "Ahh, all better! You earned a medal!";
+      const IT = [['pond', 'shell'], ['hill', 'seed'], ['bridge', 'gem'], ['tree', 'acorn'], ['bakery', 'cookie'], ['market', 'coin'], ['shed', 'flower pot'], ['clock', 'star'], ['orchard', 'apple']], pk = IT[Math.floor(Math.random() * IT.length)];
+      try { const cl = JSON.parse(localStorage.getItem('snaily-sw-coll') || '{}') || {}; cl[pk[0]] = (cl[pk[0]] || 0) + 1; localStorage.setItem('snaily-sw-coll', JSON.stringify(cl)); } catch (e) {}
+      const say2 = `Ahh, all better! You earned a medal and ${/^[aeiou]/.test(pk[1]) ? 'an' : 'a'} ${pk[1]} for the Story Garden!`;
       this.snd('flush'); setTimeout(() => this.snd('medal'), 700);
       const medals = this.state.medals + 1;
       try { localStorage.setItem('snaily-medals', String(medals)); } catch (e) {}

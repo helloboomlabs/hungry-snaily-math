@@ -102,9 +102,9 @@
       toggle('autoAdvance', 'Auto-advance', 'Steps move on by themselves'),
       h('div', { 'class': 'p-sec', text: 'Story World' }),
       toggle('trickNumbers', 'Trick numbers', 'Extra number chips that are not needed'),
-      seg('mealMinutes', 'Eating time', 'How often Snaily asks for a treat', [[10, '10m'], [20, '20m'], [30, '30m']]),
-      h('div', { 'class': 'p-sec', text: 'Time limit' }),
-      seg('timeLimit', 'Break reminder', 'Snaily naps; play pauses for 30 min', [[0, 'Off'], [10, '10'], [15, '15'], [20, '20'], [30, '30']]),
+      seg('mealMinutes', 'Meal time', 'How often Snaily asks for a treat ("Next meal in…")', [[10, '10m'], [20, '20m'], [30, '30m']]),
+      h('div', { 'class': 'p-sec', text: 'Night time' }),
+      seg('bedtime', 'Night comes after', 'Minutes of play. Snaily sleeps and the game is locked for 5 min, then starts again', [[0, 'Off'], [30, '30'], [45, '45'], [60, '60'], [90, '90']]),
       h('div', { 'class': 'row' }, [
         h('div', { 'class': 'row-l' }, [h('div', { 'class': 'row-t', text: 'Reset progress' }), h('div', { 'class': 'row-s', text: 'Clears medals, items, treats and levels' })]),
         resetButton()
@@ -166,8 +166,8 @@
         h('div', { 'class': 'stat' }, [
           h('h3', { text: 'Play time' }),
           kv('Last 7 days', fmtMins(N.weekSeconds())),
-          kv('Since last break', fmtMins(num('snaily-session-secs'))),
-          kv('Break lock', bu > Date.now() ? 'until ' + new Date(bu).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'off')
+          kv('Since last night', fmtMins(num('snaily-session-secs'))),
+          kv('Night time', bu > Date.now() ? 'Snaily is asleep until ' + new Date(bu).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : N.bedtimeLeft() >= 0 ? 'in ' + fmtMins(N.bedtimeLeft()) : 'off')
         ])
       ]),
       h('div', { 'class': 'p-note', text: 'All progress is stored only on this device. Nothing is sent anywhere.' })
