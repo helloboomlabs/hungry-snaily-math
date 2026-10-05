@@ -605,7 +605,7 @@ class Component extends DCLogic {
   componentWillUnmount() { removeEventListener('resize', this.onResize); removeEventListener('keydown', this.onKey); clearTimeout(this.t); this.stopVoice(); }
   stopVoice() { try { speechSynthesis.cancel(); SnailyNative.stopSay(); } catch (e) {} if (this.curAudio) { try { this.curAudio.pause(); } catch (e) {} this.curAudio = null; } }
   voiceOn() { return !this.state.muted && this.props.voice !== false; }
-  kidOn() { return SnailyNative.kidVoiceOn(); }
+  kidOn() { SnailyNative.watchTalk(this); return SnailyNative.kidVoiceOn(); }
   speakKid(t) {
     if (this.engine === 'device') { this.speakDevice(t); return; }
     const token = {}; this.curU = token; this.speaking = true;
@@ -671,7 +671,7 @@ class Component extends DCLogic {
     if (this.state.cannon) { this.celebQ = (this.celebQ || 0) + 1; return; }
     if (SnailyNative.reduced()) { this.cannonUntil = Date.now() + 1500; this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); }, 1500); return; }
     const id = Date.now(), cols = [SUN, PAL.A[0], PAL.B[0], PAL.G[0], 'oklch(0.8 0.12 15)', 'oklch(0.78 0.12 310)'];
-    this.cannonUntil = Date.now() + 5800;
+    this.cannonUntil = Date.now() + 4800;
     const parts = Array.from({ length: 80 }, (_, i) => {
       const x1 = -260 + Math.random() * 720, y1 = -(240 + Math.random() * 220);
       return { x1, y1, x2: x1 * 1.3, y2: 60 + Math.random() * 200, r: (Math.random() - 0.5) * 1440, c: cols[i % cols.length], w: 7 + Math.random() * 6, h: 11 + Math.random() * 8, d: Math.random() * 0.12, star: i % 4 === 0, lc: LEAFC[i % 4] };
@@ -680,19 +680,19 @@ class Component extends DCLogic {
     const ph = p => this.setState(s => ({ cannon: { ...s.cannon, ...p } }));
     this.setState({ cannon: { id, parts, phase: 'in', fired: false }, celeb: 'walk' });
     this.snd('rumble');
-    T(1150, () => { ph({ phase: 'fuse' }); this.snd('fuse'); });
-    T(1450, () => { this.setState({ celeb: 'run' }); this.snd('tap'); });
-    T(2150, () => this.setState({ celeb: 'watch' }));
-    T(2050, () => {
+    T(600, () => { ph({ phase: 'fuse' }); this.snd('fuse'); });
+    T(750, () => { this.setState({ celeb: 'run' }); this.snd('tap'); });
+    T(1150, () => this.setState({ celeb: 'watch' }));
+    T(1050, () => {
       ph({ phase: 'boom', fired: true }); this.snd('boom');
       const lid = 'lob' + id;
       this.setState(s => ({ flying: [...s.flying, { id: lid, x: 402, y: 533, dx: -222, dy: 16, mx: -110, my: -300, anim: 'lob 1s linear forwards' }] }));
       T(1000, () => { this.setState(s => ({ flying: s.flying.filter(f => f.id !== lid) })); this.eat(); });
     });
-    T(2780, () => this.setState({ celeb: 'jump' }));
-    T(3330, () => this.setState({ celeb: 'land' }));
-    T(4500, () => { ph({ phase: 'out' }); this.snd('rumble'); });
-    T(5600, () => {
+    T(1780, () => this.setState({ celeb: 'jump' }));
+    T(2330, () => this.setState({ celeb: 'land' }));
+    T(3500, () => { ph({ phase: 'out' }); this.snd('rumble'); });
+    T(4600, () => {
       this.setState({ cannon: null, celeb: null });
       if (this.celebQ) { this.celebQ--; setTimeout(() => this.celebrate(), 200); }
       else if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300);
@@ -931,7 +931,7 @@ class Component extends DCLogic {
       snailWrap: { position: 'absolute', left: this.snailX(), top: this.state.potty && this.state.potty !== 'back' ? 486 : 556, zIndex: this.state.potty || this.state.celeb ? 42 : 'auto', rotate: this.state.potty === 'back' || this.state.celeb === 'run' ? 'y 180deg' : 'y 0deg', translate: this.state.celeb === 'jump' ? '0 -78px' : '0 0', width: 150, height: 120, scale: (b => String(b))(1 + 0.14 * Math.min(1, this.state.leaves / FULL) + (this.state.munching ? 0.18 : 0)), transformOrigin: '50% 100%', transition: (this.state.potty ? 'left 1.8s' : this.state.celeb === 'run' ? 'left .55s' : 'left 1.05s') + ' ease-in-out, top 1.8s ease-in-out, rotate .3s, translate .28s ' + (this.state.celeb === 'jump' ? 'cubic-bezier(.2,.8,.3,1)' : 'cubic-bezier(.6,0,.9,.5)') + ', scale .22s ease', animation: happy ? `joy${happy % 2 ? 'A' : 'B'} .7s ease` : 'none' },
       mouthStyle: this.state.munching
         ? { position: 'absolute', left: 117, top: 68, width: 22, height: 16, borderRadius: '45%', background: 'oklch(0.45 0.12 20)', transformOrigin: '50% 50%', animation: 'chomp .3s ease-in-out infinite' }
-        : this.state.talking
+        : this.state.talking && this.state.potty !== 'sit'
         ? { position: 'absolute', left: 119, top: 70, width: 14, height: 12, borderRadius: '40% 40% 50% 50%', background: 'oklch(0.45 0.12 20)', transformOrigin: '50% 0', animation: 'talk .22s ease-in-out infinite' }
         : this.state.leaves >= FULL ? { position: 'absolute', left: 116, top: 68, width: 22, height: 12, background: 'oklch(0.45 0.12 20)', borderRadius: '2px 2px 12px 12px' }
         : this.state.leaves < FULL * 0.35 && bs.kind !== 'intro' && bs.kind !== 'level' ? { position: 'absolute', left: 119, top: 74, width: 14, height: 7, borderTop: '3px solid oklch(0.28 0.03 150)', borderRadius: '12px 12px 0 0' }
@@ -1060,12 +1060,12 @@ class Component extends DCLogic {
     out.showErase = !!(cp && cp.col === 'all');
 
     const ce = React.createElement, cn = this.state.cannon;
-    const roll = cn && cn.phase === 'out' ? 'cannonOut .95s ease-in forwards' : 'cannonIn .95s cubic-bezier(.3,.9,.35,1) both';
-    const spin = cn && cn.phase === 'out' ? 'spinOut .95s ease-in forwards' : 'spinIn .95s cubic-bezier(.3,.9,.35,1) both';
+    const roll = cn && cn.phase === 'out' ? 'cannonOut .95s ease-in forwards' : 'cannonIn .6s cubic-bezier(.3,.9,.35,1) both';
+    const spin = cn && cn.phase === 'out' ? 'spinOut .95s ease-in forwards' : 'spinIn .6s cubic-bezier(.3,.9,.35,1) both';
     out.cannonLayer = cn ? ce('div', { key: cn.id, style: { position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 45 } },
       ce('div', { style: { position: 'absolute', left: 270, top: 562, width: 180, height: 110, animation: roll } },
         ce('div', { style: { position: 'absolute', left: 46, top: 38, width: 4, height: 24, borderRadius: 2, background: 'oklch(0.42 0.04 60)', transform: 'rotate(-35deg)', transformOrigin: '50% 100%' } }),
-        cn.phase === 'fuse' ? ce('div', { style: { position: 'absolute', left: 30, top: 26, width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle, #fff 0 22%, oklch(0.9 0.17 90) 45%, oklch(0.75 0.19 45 / 0) 72%)', animation: 'spark .9s linear forwards, flicker .09s steps(2) infinite' } }) : null,
+        cn.phase === 'fuse' ? ce('div', { style: { position: 'absolute', left: 30, top: 26, width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle, #fff 0 22%, oklch(0.9 0.17 90) 45%, oklch(0.75 0.19 45 / 0) 72%)', animation: 'spark .45s linear forwards, flicker .09s steps(2) infinite' } }) : null,
         ce('div', { style: { position: 'absolute', left: 50, top: 34, width: 120, height: 44, borderRadius: '20px 8px 8px 20px', background: 'repeating-linear-gradient(90deg, oklch(0.68 0.15 25) 0 22px, oklch(0.86 0.15 95) 22px 30px)', boxShadow: 'inset 0 -6px 0 rgba(80,20,0,.18)', transformOrigin: '22px 22px', transform: 'rotate(-55deg)', animation: cn.phase === 'boom' ? 'kick2 .5s ease-out' : 'none' } },
           ce('div', { style: { position: 'absolute', right: -6, top: -5, width: 16, height: 54, borderRadius: 6, background: 'oklch(0.52 0.14 25)' } })),
         ce('div', { style: { position: 'absolute', left: 28, top: 60, width: 116, height: 30, borderRadius: 14, background: 'oklch(0.6 0.08 60)', boxShadow: 'inset 0 -5px 0 oklch(0.5 0.07 55)' } }),

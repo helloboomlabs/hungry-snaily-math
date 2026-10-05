@@ -367,7 +367,7 @@ button{font-family:inherit;}
           <button onClick="{{ primary }}" style="{{ primarySt }}">{{ primaryLabel }}</button>
         </sc-if>
         <sc-if value="{{ showSelfBtn }}" hint-placeholder-val="{{ false }}">
-          <button onClick="{{ selfBtn }}" style="flex:none;min-width:200px;padding:0 24px;border-radius:48px;border:3px solid oklch(0.85 0.06 130);background:#fff;color:oklch(0.42 0.11 150);font-size:30px;font-weight:700;cursor:pointer;box-shadow:0 6px 0 oklch(0.85 0.05 130);white-space:nowrap;">{{ selfLabel }}</button>
+          <button onClick="{{ selfBtn }}" style="flex:none;min-width:200px;padding:0 24px;border-radius:48px;border:3px solid oklch(0.85 0.06 130);background:#fff;color:oklch(0.42 0.11 150);font-size:30px;font-weight:700;cursor:pointer;box-shadow:0 6px 0 oklch(0.85 0.05 130);white-space:nowrap;position:relative;overflow:visible;"><sc-if value="{{ selfHasBadge }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="position:absolute;left:50%;top:-32px;transform:translateX(-50%);white-space:nowrap;padding:3px 12px;border-radius:14px;background:oklch(0.9 0.15 92);color:oklch(0.38 0.1 70);font-size:17px;font-weight:800;box-shadow:0 2px 0 oklch(0.76 0.12 85);pointer-events:none;">⚡ Faster! {{ selfBadge }}</div></sc-if>{{ selfLabel }}</button>
         </sc-if>
       </div>
     </div>
@@ -495,7 +495,7 @@ button{font-family:inherit;}
         <div style="position:absolute;left:224px;top:250px;width:540px;padding:26px 28px;box-sizing:border-box;border-radius:28px;background:#fff;box-shadow:0 8px 0 oklch(0.88 0.05 130),0 18px 40px rgba(40,80,40,.18);display:flex;flex-direction:column;align-items:center;gap:20px;z-index:55;">
           <div style="font-size:28px;font-weight:800;color:oklch(0.32 0.04 150);text-align:center;text-wrap:pretty;">Try it yourself, or watch Snaily first?</div>
           <div style="display:flex;gap:16px;">
-            <button onClick="{{ askSelf }}" style="height:76px;min-width:200px;padding:0 26px;border-radius:38px;border:none;background:oklch(0.72 0.14 145);color:#fff;font-size:26px;font-weight:700;cursor:pointer;box-shadow:0 5px 0 oklch(0.55 0.12 150);">I'll do it!</button>
+            <button onClick="{{ askSelf }}" style="height:76px;min-width:200px;padding:0 26px;border-radius:38px;border:none;background:oklch(0.72 0.14 145);color:#fff;font-size:26px;font-weight:700;cursor:pointer;box-shadow:0 5px 0 oklch(0.55 0.12 150);position:relative;overflow:visible;"><div aria-hidden="true" style="position:absolute;left:50%;top:-32px;transform:translateX(-50%);white-space:nowrap;padding:3px 12px;border-radius:14px;background:oklch(0.9 0.15 92);color:oklch(0.38 0.1 70);font-size:17px;font-weight:800;box-shadow:0 2px 0 oklch(0.76 0.12 85);pointer-events:none;">⚡ Faster! {{ selfBadge }}</div>I'll do it!</button>
             <button onClick="{{ askShow }}" style="height:76px;min-width:200px;padding:0 26px;border-radius:38px;border:3px solid oklch(0.85 0.06 130);background:#fff;color:oklch(0.42 0.11 150);font-size:26px;font-weight:700;cursor:pointer;box-shadow:0 5px 0 oklch(0.85 0.05 130);">Show me how</button>
           </div>
         </div>
@@ -525,6 +525,7 @@ const P = a => a[Math.floor(Math.random() * a.length)];
 const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const S = (v, kind, name, pre = '', suf = '') => ({ v: String(v), kind, name, pre, suf });
 const C = (id, say, hint) => ({ type: 'calc', id, say, hint: hint || say });
+const SELF_GAIN = 3;
 // Speedy feed "I know how!": just the sum or the bare question, no explanation.
 const quickSay = t => {
   const raw = String(t.say).split(/(?<=[.!:])\s+|(?<=\?)\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean), cl = raw.map(x => x.replace(/[.:]$/, ''));
@@ -613,13 +614,20 @@ function mkLine(a, op, b) {
   return { steps, parts, pts };
 }
 function mkSkip(o) {
+  // Snaily hops the middle jumps herself, so a child types the first two
+  // jumps, watches the pattern, and types the last one (not 10 in a row).
+  const hop = (j, n) => n >= 5 && j >= 3 && j < n;
+  const HOP = "Hop, hop! I'll do the middle jumps for you.";
   const steps = [];
   if (o.kind === 'mul') {
-    for (let j = 1; j <= o.n; j++) steps.push({ kind: 'type', ans: String(j * o.k), say: j === 1 ? `Count by ${o.k}s! 1 group of ${o.k} makes how many?` : `${j - 1} ${j - 1 === 1 ? 'group makes' : 'groups make'} ${(j - 1) * o.k}. One more group: ${(j - 1) * o.k} + ${o.k} = ?`, hint: `${(j - 1) * o.k} + ${o.k} = ?` });
-    return { steps, per: o.k, count: o.n, all: true, eq: `${o.n} × ${o.k}`, done: `${o.n} × ${o.k} = ${o.n * o.k}` };
+    let n = o.n, k = o.k;
+    // Turn it around: 10 groups of 5 is 5 groups of 10 (fewer jumps).
+    const turned = n > k && k >= 2; if (turned) [n, k] = [k, n];
+    for (let j = 1; j <= n; j++) steps.push(hop(j, n) ? { kind: 'hop', auto: true, ans: String(j * k), say: HOP } : { kind: 'type', ans: String(j * k), say: j === 1 ? (turned ? `Turn it around! ${o.n} groups of ${o.k} is the same as ${n} groups of ${k}. Count by ${k}s! 1 group of ${k} makes how many?` : `Count by ${k}s! 1 group of ${k} makes how many?`) : `${j - 1} ${j - 1 === 1 ? 'group makes' : 'groups make'} ${(j - 1) * k}. One more group: ${(j - 1) * k} + ${k} = ?`, hint: `${(j - 1) * k} + ${k} = ?` });
+    return { steps, per: k, count: n, all: true, eq: turned ? `${o.n} × ${o.k} = ${n} × ${k}` : `${o.n} × ${o.k}`, done: `${o.n} × ${o.k} = ${o.n * o.k}` };
   }
   const q = o.t / o.per;
-  for (let j = 1; j <= q; j++) steps.push({ kind: 'type', ans: String(j * o.per), say: (j === 1 ? (o.share ? `Share ${o.t} into ${o.per} equal groups. Each round gives 1 to every group, so ${o.per} each round. ` : `Make groups of ${o.per} until we reach ${o.t}. `) : '') + `${(j - 1) * o.per} + ${o.per} = ?`, hint: `${(j - 1) * o.per} + ${o.per} = ?` });
+  for (let j = 1; j <= q; j++) steps.push(hop(j, q) ? { kind: 'hop', auto: true, ans: String(j * o.per), say: HOP } : { kind: 'type', ans: String(j * o.per), say: (j === 1 ? (o.share ? `Share ${o.t} into ${o.per} equal groups. Each round gives 1 to every group, so ${o.per} each round. ` : `Make groups of ${o.per} until we reach ${o.t}. `) : '') + `${(j - 1) * o.per} + ${o.per} = ?`, hint: `${(j - 1) * o.per} + ${o.per} = ?` });
   steps.push({ kind: 'type', count: true, ans: String(q), say: o.share ? `We reached ${o.t}! How many rounds did it take? That's how many each group gets.` : `We reached ${o.t}! How many groups of ${o.per} did we make?`, hint: 'Count the boxes. Each box is one jump.' });
   return { steps, per: o.per, count: q, all: false, eq: o.share ? `${o.t} shared into ${o.per} equal groups` : `${o.t} in groups of ${o.per}`, done: o.share ? `${o.t} ÷ ${o.per} = ${q} each` : `${q} groups of ${o.per}` };
 }
@@ -762,6 +770,8 @@ const ITEM = (k, s) => {
   if (k === 'acorn') return { ...b, width: s * 0.82, borderRadius: '45% 45% 50% 50% / 38% 38% 62% 62%', background: 'linear-gradient(180deg, oklch(0.48 0.07 55) 0 36%, oklch(0.76 0.11 72) 36%)', boxShadow: `inset -${Math.round(s * 0.1)}px -${Math.round(s * 0.08)}px 0 oklch(0.64 0.1 62)` };
   if (k === 'star') return { ...b, clipPath: 'polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)', background: 'oklch(0.85 0.15 90)' };
   if (k === 'apple') return { ...b, height: s * 0.92, borderRadius: '45% 45% 50% 50%', background: 'radial-gradient(circle at 35% 30%, oklch(0.8 0.14 25), oklch(0.62 0.19 25) 70%)' };
+  if (k === 'bun') return { ...b, height: s * 0.78, borderRadius: '50% 50% 38% 38% / 64% 64% 36% 36%', background: 'radial-gradient(ellipse at 38% 28%, oklch(0.93 0.07 85) 0 14%, transparent 34%), radial-gradient(circle at 30% 42%, oklch(0.97 0.02 90) 0 4%, transparent 5%), radial-gradient(circle at 62% 34%, oklch(0.97 0.02 90) 0 4%, transparent 5%), radial-gradient(circle at 48% 56%, oklch(0.97 0.02 90) 0 4%, transparent 5%), linear-gradient(180deg, oklch(0.74 0.13 62) 0 70%, oklch(0.66 0.12 55) 70%)', border: `${Math.max(1, Math.round(s * 0.05))}px solid oklch(0.58 0.11 52)` };
+  if (k === 'muffin' || k === 'cupcake') return TREAT(k, s);
   if (k === 'drop') return { ...b, width: s * 0.78, height: s * 0.78, borderRadius: '50% 0 50% 50%', transform: 'rotate(-45deg)', background: 'oklch(0.75 0.11 230)' };
   return { ...b, borderRadius: '0 50%', background: LEAFC[0] };
 };
@@ -939,17 +949,17 @@ const T = {
         calcs: [C('t', `${n} groups of ${k}. Count by ${k}s: ${n} × ${k}.`)], sentence: `There are ${n * k} cookies in all!` }; },
     i => { const n = P([2, 3, 4, 5]), k = R(2, 5 + i), t = n * k;
       return { text: `${t} muffins are shared equally among ${n} ladybugs. How many muffins does each ladybug get?`, method: 'Drawing groups', tip: 'Sharing: deal them out one by one into equal groups.',
-        model: { type: 'groups', n, k, item: 'cookie', words: ['ladybugs ×', 'each =', 'muffins'] },
+        model: { type: 'groups', n, k, item: 'muffin', words: ['ladybugs ×', 'each =', 'muffins'] },
         slots: { t: S(t, 'given', 'muffins'), g: S(n, 'given', 'ladybugs'), e: S(k, 'calc', 'each') },
         calcs: [C('e', `Share ${t} into ${n} equal groups. ${n} × ? = ${t}.`)], sentence: `Each ladybug gets ${k} muffins!` }; },
     i => { const k = P([2, 3, 4, 5, 10]), n = R(2, 5 + i), t = n * k;
       return { text: `There are ${t} buns. Baker Bea puts ${k} buns in each bag. How many bags can she fill?`, method: 'Drawing groups', tip: 'Grouping: make groups of the same size and count them.',
-        model: { type: 'groups', n, k, item: 'cookie', words: ['bags ×', 'in each =', 'buns'] },
+        model: { type: 'groups', n, k, item: 'bun', words: ['bags ×', 'in each =', 'buns'] },
         slots: { t: S(t, 'given', 'buns'), e: S(k, 'given', 'in each bag'), g: S(n, 'calc', 'bags') },
         calcs: [C('g', `How many groups of ${k} make ${t}? Count by ${k}s.`)], sentence: `Bea can fill ${n} bags!` }; },
     i => { const r = R(2, Math.min(5, 3 + i)), c = P(i < 2 ? [2, 5, 10] : [3, 4, 5, 10]);
       return { text: `Snaily lines up cupcakes in ${r} rows. There are ${c} cupcakes in each row. How many cupcakes are there?`, method: 'Array', tip: 'Rows of the same size make an array.',
-        model: { type: 'groups', mode: 'array', n: r, k: c, item: 'cookie', words: ['rows ×', 'in each row =', 'cupcakes'] },
+        model: { type: 'groups', mode: 'array', n: r, k: c, item: 'cupcake', words: ['rows ×', 'in each row =', 'cupcakes'] },
         slots: { g: S(r, 'given', 'rows'), e: S(c, 'given', 'in each row'), t: S(r * c, 'calc', 'cupcakes') },
         calcs: [C('t', `${r} rows of ${c}: ${r} × ${c}.`)], sentence: `There are ${r * c} cupcakes!` }; },
     i => { const k = P([2, 3, 4, 5, 10]), n = R(3, Math.min(8, 4 + i));
@@ -1545,7 +1555,7 @@ class Component extends DCLogic {
 
   stopVoice() { try { speechSynthesis.cancel(); SnailyNative.stopSay(); } catch (e) {} if (this.curAudio) { try { this.curAudio.pause(); } catch (e) {} this.curAudio = null; } this.curU = null; }
   voiceOn() { return !this.state.muted && !this.state.voiceOff && this.props.voice !== false; }
-  kidOn() { return SnailyNative.kidVoiceOn(); }
+  kidOn() { SnailyNative.watchTalk(this); return SnailyNative.kidVoiceOn(); }
   speakKid(t) {
     if (this.engine === 'device') { this.speakDevice(t); return; }
     const token = {}; this.curU = token; this.speaking = true;
@@ -1600,19 +1610,19 @@ class Component extends DCLogic {
     const ph = p => this.setState(s => ({ cannon: { ...s.cannon, ...p } }));
     this.setState({ cannon: { id, parts, phase: 'in', fired: false }, celeb: 'walk' });
     this.snd('rumble');
-    T2(1150, () => { ph({ phase: 'fuse' }); this.snd('fuse'); });
-    T2(1450, () => { this.setState({ celeb: 'run' }); this.snd('tap'); });
-    T2(2150, () => this.setState({ celeb: 'watch' }));
-    T2(2050, () => {
+    T2(600, () => { ph({ phase: 'fuse' }); this.snd('fuse'); });
+    T2(750, () => { this.setState({ celeb: 'run' }); this.snd('tap'); });
+    T2(1150, () => this.setState({ celeb: 'watch' }));
+    T2(1050, () => {
       ph({ phase: 'boom', fired: true }); this.snd('boom');
       const lid = 'lob' + id;
       this.setState(s => ({ flying: [...s.flying, { id: lid, x: 402, y: 533, dx: -222, dy: 16, mx: -110, my: -300, anim: 'lob 1s linear forwards' }] }));
       T2(1000, () => { this.setState(s => ({ flying: s.flying.filter(f => f.id !== lid) })); this.eat(); });
     });
-    T2(2780, () => this.setState({ celeb: 'jump' }));
-    T2(3330, () => this.setState({ celeb: 'land' }));
-    T2(4500, () => { ph({ phase: 'out' }); this.snd('rumble'); });
-    T2(5600, () => {
+    T2(1780, () => this.setState({ celeb: 'jump' }));
+    T2(2330, () => this.setState({ celeb: 'land' }));
+    T2(3500, () => { ph({ phase: 'out' }); this.snd('rumble'); });
+    T2(4600, () => {
       this.setState({ cannon: null, celeb: null });
       if (this.celebQ) { this.celebQ--; setTimeout(() => this.celebrate(), 200); }
       else if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300);
@@ -1797,7 +1807,9 @@ class Component extends DCLogic {
   }
   slotCenter(id) { const r = this.rects[id]; return r ? [MX + r[0] + r[2] / 2, MY + r[1] + r[3] / 2] : [MX + 446, MY + 120]; }
   burstAt(id, n = 10) { const [x, y] = this.slotCenter(id); this.burst(x, y, n); }
-  win(x, y) { this.locked = true; this.snd('pop'); setTimeout(() => { this.snd('yay'); this.burst(x, y); this.celebrate(); }, 900); }
+  win(x, y) { this.locked = true; this.snd('pop'); setTimeout(() => { this.snd('yay'); this.burst(x, y); this.celebrate(); }, 250); }
+  // Small steps inside "Work it out": a quick yay and a leaf, no cannon.
+  quickWin() { this.locked = true; this.snd('yay'); this.eat(); setTimeout(() => { if (this.state.leaves >= FULL) setTimeout(() => this.startPotty(), 300); else this.unlock(); }, 700); }
   quickFeed(x, y) {
     const tx = this.snailX() + 140, ty = 616, id = 'q' + Date.now();
     this.setState(s => ({ flying: [...s.flying, { id, x, y, dx: tx - x, dy: ty - y, mx: (tx - x) / 2, my: -220, anim: 'lob .8s linear forwards' }] }));
@@ -1827,7 +1839,7 @@ class Component extends DCLogic {
       this.setState({ typed, wrong: 0, hint: null }); this.snd('pop');
       const steps = this.workSteps(w), lastType = !steps.slice(w.wi + 1).some(x => x.kind === 'type');
       if (lastType && !w.noAuto) { this.locked = true; setTimeout(() => { this.locked = false; this.setState({ typed: '' }); this.snd('yay'); this.workNext(); }, 800); }
-      else { const x = w.view === 'blocks' ? MX + 96 + (st.col ?? 2) * 184 : MX + 446, y = MY + (w.view === 'blocks' ? 150 : 200); this.pendingNext = () => { this.setState({ typed: '' }); this.workNext(); }; this.win(x, y); }
+      else { const x = w.view === 'blocks' ? MX + 96 + (st.col ?? 2) * 184 : MX + 446, y = MY + (w.view === 'blocks' ? 150 : 200); this.pendingNext = () => { this.setState({ typed: '' }); this.workNext(); }; this.quickWin(); }
     }
     else { const wrong = this.state.wrong + 1; this.setState({ typed: '', wrong, hint: st.hint + (wrong >= 2 ? ` Try ${st.ans}!` : '') }); this.snd('oops'); }
   }
@@ -1836,6 +1848,7 @@ class Component extends DCLogic {
     const w = this.state.work, steps = this.workSteps(w), st = steps[w.wi], wi = w.wi + 1;
     if (st.kind !== 'type') {} else if (w.view === 'blocks') this.burst(MX + 96 + (st.col ?? 2) * 184, MY + 150, 9); else this.burst(MX + 446, MY + 200, 8);
     this.setState({ work: { ...w, wi } });
+    if (steps[wi] && steps[wi].auto) setTimeout(() => { const w2 = this.state.work; if (w2 && w2.wi === wi && !this.locked) this.workNext(); else if (w2 && w2.wi === wi) this.pendingNext = () => this.workNext(); }, 450);
     if (wi >= steps.length) { this.locked = true; setTimeout(() => { this.locked = false; const t = this.task(); this.setState({ work: null, typed: '' }); if (t && !w.noAuto) this.correct(t); else this.forceUpdate(); }, 1300); }
   }
   setView(v) { const w = this.state.work; if (!w || this.locked) return; if (v === 'story') { this.setState({ work: null, typed: '', hint: null }); this.snd('pop'); return; } if (w.view !== v) { this.setState({ work: { ...w, view: v, wi: 0 }, typed: '', hint: null }); this.snd('pop'); } }
@@ -1859,7 +1872,7 @@ class Component extends DCLogic {
   };
   showMe = () => {
     if (this.locked || this.busy()) return;
-    const s = this.cur(); if (!s) return; this.ac();
+    const s = this.cur(); if (!s) return; this.ac(); s.helped = true;
     if (this.state.phase === 'build') {
       const g = this.state.gstep, id = s.given[g]; if (!id) return;
       const chip = s.chips.find(c => !this.state.used[c.id] && c.txt === disp(s.slots[id]));
@@ -1936,7 +1949,8 @@ class Component extends DCLogic {
   finalWin(id) {
     const key = SPOTS[this.state.spot].key;
     try { SnailyNative.solved(this.state.spot); } catch (e) {}
-    this.setState(st => ({ phase: 'done', wrong: 0, earned: st.earned + 1, coll: { ...st.coll, [key]: (st.coll[key] || 0) + 1 } }), () => this.save());
+    const sto = this.cur(), gain = sto && !sto.guided && !sto.helped ? SELF_GAIN : 1;
+    this.setState(st => ({ phase: 'done', wrong: 0, lastGain: gain, earned: st.earned + gain, coll: { ...st.coll, [key]: (st.coll[key] || 0) + gain } }), () => this.save());
     const [x, y] = this.slotCenter(id); this.win(x, y);
   }
   practiceWin(id) {
@@ -2049,17 +2063,17 @@ class Component extends DCLogic {
       } else if (phase === 'done') {
         say = sto.sentence + (prac ? '' : si < S0.visit.length - 1 ? ' Tap “Next story”!' : ' You solved all 5 stories!');
         const fs = sto.slots[sto.calcs[sto.calcs.length - 1].id];
-        out.showDone = true; out.doneAns = disp(fs); out.doneTxt = `+1 ${sp.one}`; out.doneItem = ITEM(sp.item, 34);
+        out.showDone = true; out.doneAns = disp(fs); out.doneTxt = prac || (S0.lastGain || 1) === 1 ? `+1 ${sp.one}` : `+${S0.lastGain} ${sp.many}! You did it yourself!`; out.doneItem = ITEM(sp.item, 34);
       }
       out.showAsk = !!sto.askMode && phase === 'build' && !prac;
       out.askSelf = () => { this.ac(); sto.askMode = false; sto.guided = false; this.snd('pop'); this.forceUpdate(); };
-      out.askShow = () => { this.ac(); sto.askMode = false; sto.guided = true; this.snd('pop'); this.forceUpdate(); };
+      out.askShow = () => { this.ac(); sto.askMode = false; sto.guided = true; sto.helped = true; this.snd('pop'); this.forceUpdate(); };
       if (out.showAsk) { say = 'Do you want to try this one yourself, or shall I show you how?'; out.showNote = false; }
       const gl = sto.guided && !prac && (phase === 'build' || (t && t.type === 'guess'));
       const how = phase === 'solve' && t && t.wk;
       out.showSelfBtn = gl && !this.locked && !this.busy() && !S0.celeb && (phase === 'build' ? !S0.gstep : !(S0.guesses || []).length);
       out.selfBtn = () => { this.ac(); sto.guided = false; this.snd('pop'); this.forceUpdate(); };
-      out.selfLabel = 'I can do it!';
+      out.selfLabel = 'I can do it!'; out.selfBadge = `+${SELF_GAIN} ${sp.many}`; out.selfHasBadge = !prac;
       if (prac && phase === 'solve' && t && t.type !== 'guess' && !S0.quick && !this.locked && !this.busy() && !S0.celeb) { out.showSelfBtn = true; out.selfLabel = 'I know how!'; out.selfBtn = () => { this.ac(); this.snd('pop'); this.setState({ quick: true }); }; }
       out.primaryLabel = gl ? 'Show me' : (phase === 'done' && !prac) ? (si < S0.visit.length - 1 ? 'Next story' : 'Finish visit') : how ? 'Show me how' : '';
       out.primary = gl ? this.showMe : phase === 'done' ? this.nextStory : this.openWork;
@@ -2112,8 +2126,8 @@ class Component extends DCLogic {
     out.storyOn = this.props.story !== 'hide'; out.storyOff = !out.storyOn;
 
     out.showVisitDone = isStory && S0.visitDone && !S0.choice && !S0.finished && !pt;
-    if (prac) { const sec = Math.round(S0.pTime / 1000); out.vdTitle = 'Speedy feed done!'; out.vdText = `${S0.firstTry} of ${S0.visit ? S0.visit.length : 10} right on the first try, in ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}. You collected ${S0.earned} ${S0.earned === 1 ? sp.one : sp.many}!`; out.vdItems = Array.from({ length: S0.earned }, () => ({ st: ITEM(sp.item, 34) })); out.vdAgainLabel = 'Practice again'; }
-    else { out.vdTitle = `You finished the ${sp.name}!`; out.vdText = `You collected ${S0.earned} ${S0.earned === 1 ? sp.one : sp.many}. They are on your shelf now.`; out.vdItems = Array.from({ length: S0.earned }, () => ({ st: ITEM(sp.item, 44) })); out.vdAgainLabel = `Play ${sp.name} again`; }
+    if (prac) { const sec = Math.round(S0.pTime / 1000); out.vdTitle = 'Speedy feed done!'; out.vdText = `${S0.firstTry} of ${S0.visit ? S0.visit.length : 10} right on the first try, in ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}. You collected ${S0.earned} ${S0.earned === 1 ? sp.one : sp.many}!`; out.vdItems = Array.from({ length: Math.min(S0.earned, 12) }, () => ({ st: ITEM(sp.item, 34) })); out.vdAgainLabel = 'Practice again'; }
+    else { out.vdTitle = `You finished the ${sp.name}!`; out.vdText = `You collected ${S0.earned} ${S0.earned === 1 ? sp.one : sp.many}. They are on your shelf now.`; out.vdItems = Array.from({ length: Math.min(S0.earned, 12) }, () => ({ st: ITEM(sp.item, 44) })); out.vdAgainLabel = `Play ${sp.name} again`; }
     out.vdBack = () => { this.setState({ visitDone: false }, () => this.toMap()); };
     out.vdAgain = () => { this.setState({ visitDone: false }, () => this.enterSpot(S0.spot, S0.mode)); };
 
@@ -2127,8 +2141,8 @@ class Component extends DCLogic {
     out.snailWrap = { position: 'absolute', left: this.snailX(), top: pt && pt !== 'back' ? 486 : 556, zIndex: pt || S0.celeb ? 42 : 'auto', rotate: pt === 'back' || S0.celeb === 'run' ? 'y 180deg' : 'y 0deg', translate: S0.celeb === 'jump' ? '0 -78px' : '0 0', width: 150, height: 120, scale: String(1 + 0.14 * Math.min(1, S0.leaves / FULL) + (S0.munching ? 0.18 : 0)), transformOrigin: '50% 100%', transition: (pt ? 'left 1.8s' : S0.celeb === 'run' ? 'left .55s' : 'left 1.05s') + ' ease-in-out, top 1.8s ease-in-out, rotate .3s, translate .28s ' + (S0.celeb === 'jump' ? 'cubic-bezier(.2,.8,.3,1)' : 'cubic-bezier(.6,0,.9,.5)') + ', scale .22s ease', animation: happy ? `joy${happy % 2 ? 'A' : 'B'} .7s ease` : 'none' };
     out.mouthStyle = S0.munching
       ? { position: 'absolute', left: 117, top: 68, width: 22, height: 16, borderRadius: '45%', background: 'oklch(0.45 0.12 20)', transformOrigin: '50% 50%', animation: 'chomp .3s ease-in-out infinite' }
-      : S0.talking ? { position: 'absolute', left: 119, top: 70, width: 14, height: 12, borderRadius: '40% 40% 50% 50%', background: 'oklch(0.45 0.12 20)', transformOrigin: '50% 0', animation: 'talk .22s ease-in-out infinite' }
-      : S0.laughing ? { position: 'absolute', left: 114, top: 66, width: 26, height: 16, background: 'oklch(0.45 0.12 20)', borderRadius: '3px 3px 14px 14px', borderBottom: '4px solid oklch(0.72 0.14 20)', boxSizing: 'border-box', transformOrigin: '50% 0', animation: 'laugh .22s ease-in-out infinite' }
+      : S0.talking && S0.potty !== 'sit' ? { position: 'absolute', left: 119, top: 70, width: 14, height: 12, borderRadius: '40% 40% 50% 50%', background: 'oklch(0.45 0.12 20)', transformOrigin: '50% 0', animation: 'talk .22s ease-in-out infinite' }
+      : S0.laughing ? { position: 'absolute', left: 114, top: 66, width: 26, height: 16, background: 'oklch(0.45 0.12 20)', borderRadius: '3px 3px 14px 14px', borderBottom: '4px solid oklch(0.72 0.14 20)', boxSizing: 'border-box', transformOrigin: '50% 0', animation: 'none' }
       : S0.leaves >= FULL ? { position: 'absolute', left: 116, top: 68, width: 22, height: 12, background: 'oklch(0.45 0.12 20)', borderRadius: '2px 2px 12px 12px' }
       : { position: 'absolute', left: 116, top: 68, width: 22, height: 11, borderBottom: '3.5px solid oklch(0.28 0.03 150)', borderRadius: '0 0 14px 14px', boxSizing: 'border-box' };
     out.isFull = S0.leaves >= FULL && !pt;
@@ -2151,12 +2165,12 @@ class Component extends DCLogic {
       ce('div', { style: { position: 'absolute', left: -40, top: 236, width: 280, textAlign: 'center', fontSize: 34, fontWeight: 700, color: 'oklch(0.45 0.12 70)' } }, 'Medal!')) : null;
 
     const cn = S0.cannon;
-    const roll = cn && cn.phase === 'out' ? 'cannonOut .95s ease-in forwards' : 'cannonIn .95s cubic-bezier(.3,.9,.35,1) both';
-    const spin = cn && cn.phase === 'out' ? 'spinOut .95s ease-in forwards' : 'spinIn .95s cubic-bezier(.3,.9,.35,1) both';
+    const roll = cn && cn.phase === 'out' ? 'cannonOut .95s ease-in forwards' : 'cannonIn .6s cubic-bezier(.3,.9,.35,1) both';
+    const spin = cn && cn.phase === 'out' ? 'spinOut .95s ease-in forwards' : 'spinIn .6s cubic-bezier(.3,.9,.35,1) both';
     out.cannonLayer = cn ? ce('div', { key: cn.id, style: { position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 45 } },
       ce('div', { style: { position: 'absolute', left: 270, top: 562, width: 180, height: 110, animation: roll } },
         ce('div', { style: { position: 'absolute', left: 46, top: 38, width: 4, height: 24, borderRadius: 2, background: 'oklch(0.42 0.04 60)', transform: 'rotate(-35deg)', transformOrigin: '50% 100%' } }),
-        cn.phase === 'fuse' ? ce('div', { style: { position: 'absolute', left: 30, top: 26, width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle, #fff 0 22%, oklch(0.9 0.17 90) 45%, oklch(0.75 0.19 45 / 0) 72%)', animation: 'spark .9s linear forwards, flicker .09s steps(2) infinite' } }) : null,
+        cn.phase === 'fuse' ? ce('div', { style: { position: 'absolute', left: 30, top: 26, width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle, #fff 0 22%, oklch(0.9 0.17 90) 45%, oklch(0.75 0.19 45 / 0) 72%)', animation: 'spark .45s linear forwards, flicker .09s steps(2) infinite' } }) : null,
         ce('div', { style: { position: 'absolute', left: 50, top: 34, width: 120, height: 44, borderRadius: '20px 8px 8px 20px', background: 'repeating-linear-gradient(90deg, oklch(0.68 0.15 25) 0 22px, oklch(0.86 0.15 95) 22px 30px)', boxShadow: 'inset 0 -6px 0 rgba(80,20,0,.18)', transformOrigin: '22px 22px', transform: 'rotate(-55deg)', animation: cn.phase === 'boom' ? 'kick2 .5s ease-out' : 'none' } },
           ce('div', { style: { position: 'absolute', right: -6, top: -5, width: 16, height: 54, borderRadius: 6, background: 'oklch(0.52 0.14 25)' } })),
         ce('div', { style: { position: 'absolute', left: 28, top: 60, width: 116, height: 30, borderRadius: 14, background: 'oklch(0.6 0.08 60)', boxShadow: 'inset 0 -5px 0 oklch(0.5 0.07 55)' } }),

@@ -121,13 +121,15 @@
   function kidUrl(q) { return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=' + encodeURIComponent(q); }
 
   // Browsers (iPhone/iPad Safari above all) only let a page play sound after
-  // the child has tapped it. One shared <audio> element is "unlocked" on the
-  // first tap and then reused for every line Snaily says. A line that arrives
-  // before the first tap is kept and spoken as soon as the child taps.
-  var kid = { el: null, unlocked: false, pending: null, token: 0, silent: null };
-  function kidEl() {
-    if (!kid.el) { kid.el = new Audio(); kid.el.preload = 'auto'; kid.el.setAttribute('playsinline', ''); }
-    return kid.el;
+  // the child has tapped it. Two shared <audio> players are "unlocked" on the
+  // first tap and reused for every line Snaily says: one plays the current
+  // sentence while the other already loads the next one, so there are no
+  // long pauses and no lost sentences. A line that arrives before the first
+  // tap is kept and spoken as soon as the child taps.
+  var kid = { els: null, unlocked: false, pending: null, token: 0, silent: null };
+  function kidEls() {
+    if (!kid.els) kid.els = [0, 1].map(function () { var e = new Audio(); e.preload = 'auto'; e.setAttribute('playsinline', ''); return e; });
+    return kid.els;
   }
   function silentUrl() {
     if (kid.silent) return kid.silent;
@@ -143,47 +145,69 @@
   function unlockAudio() {
     if (kid.unlocked || unlocking) return;
     unlocking = true;
-    var a = kidEl();
-    var done = function () { unlocking = false; kid.unlocked = true; var f = kid.pending; kid.pending = null; if (f) f(); };
-    try {
-      a.src = silentUrl();
-      var p = a.play();
-      if (p && p.then) p.then(function () { try { a.pause(); } catch (e) {} done(); })
-        .catch(function (e) { if (e && e.name === 'AbortError') done(); else unlocking = false; });
-      else done();
-    } catch (e) { unlocking = false; }
+    // The device voice (used offline) also needs a first tap on iPhone/iPad.
+    try { var su = new SpeechSynthesisUtterance(' '); su.volume = 0; speechSynthesis.speak(su); } catch (e) {}
+    var left = 2, failed = false;
+    var done = function () { if (--left > 0) return; unlocking = false; if (failed) return; kid.unlocked = true; var f = kid.pending; kid.pending = null; if (f) f(); };
+    kidEls().forEach(function (a) {
+      try {
+        a.src = silentUrl();
+        var p = a.play();
+        if (p && p.then) p.then(function () { try { a.pause(); } catch (e) {} done(); })
+          .catch(function (e) { if (!(e && e.name === 'AbortError')) failed = true; done(); });
+        else done();
+      } catch (e) { failed = true; done(); }
+    });
   }
   ['touchend', 'pointerup', 'click', 'keydown'].forEach(function (ev) { addEventListener(ev, unlockAudio, true); });
+
+  // Google reads at most ~200 characters per request and is quicker with
+  // short pieces: split at sentence ends, then long sentences at commas.
+  function chunks(t) {
+    var parts = [];
+    String(t).split(/(?<=[.!?])\s+/).forEach(function (x) {
+      x = x.trim(); if (!x) return;
+      while (x.length > 110) { var c = x.lastIndexOf(', ', 110); if (c < 30) c = x.lastIndexOf(' ', 110); if (c < 1) c = 110; parts.push(x.slice(0, c + 1).trim()); x = x.slice(c + 1).trim(); }
+      if (x) parts.push(x);
+    });
+    return parts;
+  }
+  function prep(a, url) {
+    a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
+    a.defaultPlaybackRate = KID_RATE;
+    if (a.getAttribute('data-q') !== url) { a.setAttribute('data-q', url); a.src = url; try { a.load(); } catch (e) {} }
+  }
 
   // Speaks text in the kid voice. cb: {live, start, gap, end, blocked, fail(rest)}
   function speakKid(t, cb) {
     cb = cb || {};
     var my = ++kid.token;
-    var parts = [], k = 0, tries = 0;
-    // Google reads at most ~200 characters per request: split long sentences at commas.
-    String(t).split(/(?<=[.!?])\s+/).forEach(function (x) {
-      x = x.trim(); if (!x) return;
-      while (x.length > 180) { var c = x.lastIndexOf(', ', 180); if (c < 40) c = x.lastIndexOf(' ', 180); parts.push(x.slice(0, c + 1).trim()); x = x.slice(c + 1).trim(); }
-      if (x) parts.push(x);
-    });
+    var parts = chunks(t), k = 0, tries = 0;
     var alive = function () { return my === kid.token && (!cb.live || cb.live()); };
     if (!kid.unlocked) {
       kid.pending = function () { if (alive()) speakKid(t, cb); };
       if (cb.blocked) cb.blocked();
       return;
     }
-    var a = kidEl();
+    var els = kidEls();
     function next() {
       if (!alive()) return;
       if (k >= parts.length) { if (cb.end) cb.end(); return; }
-      a.onended = function () { if (!alive()) return; if (cb.gap) cb.gap(); k++; tries = 0; setTimeout(next, 380); };
+      var a = els[k % 2], b = els[(k + 1) % 2];
+      [a, b].forEach(function (e) { e.onended = e.onerror = e.onplaying = e.onwaiting = null; });
+      a.onended = function () { if (!alive()) return; if (cb.gap) cb.gap(); k++; tries = 0; setTimeout(next, 250); };
       // A sentence that fails to load (busy network) is tried again before
       // falling back to the device voice, so Snaily doesn't stop mid-line.
-      a.onerror = function () { if (!alive()) return; if (tries++ < 2) { setTimeout(next, 400 * tries); return; } tries = 0; if (cb.fail) cb.fail(parts.slice(k).join(' ')); };
+      a.onerror = function () {
+        if (!alive()) return;
+        if (tries++ < 2) { a.removeAttribute('data-q'); setTimeout(next, 400 * tries); return; }
+        tries = 0; if (cb.fail) cb.fail(parts.slice(k).join(' '));
+      };
       a.onplaying = function () { a.playbackRate = KID_RATE; if (cb.start) cb.start(); };
-      a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
-      a.defaultPlaybackRate = KID_RATE; a.playbackRate = KID_RATE;
-      a.src = kidUrl(parts[k]);
+      a.onwaiting = function () { if (alive() && cb.gap) cb.gap(); };
+      prep(a, kidUrl(parts[k]));
+      a.playbackRate = KID_RATE;
+      try { a.currentTime = 0; } catch (e) {}
       var p = a.play();
       if (p && p.catch) p.catch(function (e) {
         if (!alive()) return;
@@ -193,14 +217,32 @@
           if (cb.blocked) cb.blocked();
         } else if (!e || e.name !== 'AbortError') a.onerror();
       });
+      // load the next sentence while this one plays
+      if (k + 1 < parts.length) prep(b, kidUrl(parts[k + 1]));
     }
     next();
   }
   function stopSay() {
     kid.token++;
     try { speechSynthesis.cancel(); } catch (e) {}
-    if (kid.el && !kid.el.paused && !unlocking) { try { kid.el.pause(); } catch (e) {} }
+    if (kid.els && !unlocking) kid.els.forEach(function (e) { if (!e.paused) { try { e.pause(); } catch (x) {} } });
   }
+  // Is Snaily's voice actually making sound right now?
+  function speakingNow() {
+    var on = false;
+    if (kid.els) kid.els.forEach(function (e) { if (!e.paused && !e.ended && e.readyState > 2 && e.getAttribute('data-q')) on = true; });
+    try { if (speechSynthesis.speaking && !speechSynthesis.paused) on = true; } catch (e) {}
+    return on;
+  }
+  // Snaily's mouth only moves while she is really talking: if a game says
+  // she is talking but no sound plays for a moment, close her mouth.
+  var talkers = [], quiet = 0;
+  function watchTalk(c) { if (talkers.indexOf(c) < 0) talkers.push(c); }
+  setInterval(function () {
+    var busy = speakingNow();
+    quiet = busy ? 0 : quiet + 1;
+    if (quiet >= 2) talkers.forEach(function (c) { try { if (c.state && c.state.talking) c.setState({ talking: false }); } catch (e) {} });
+  }, 400);
   function sayDevice(t) {
     try { var u = new SpeechSynthesisUtterance(t), v = anyVoice(); if (v) u.voice = v; u.pitch = 1.65; u.rate = 0.79; speechSynthesis.speak(u); } catch (e) {}
   }
@@ -446,7 +488,7 @@
     getSettings: getSettings, setSettings: setSettings, DEFAULTS: DEFAULTS,
     restore: restore, resetProgress: resetProgress,
     vw: vw, vh: vh, insets: insets,
-    anyVoice: anyVoice, fx: fx, buzz: buzz, say: say, stopSay: stopSay, kidVoiceOn: kidVoiceOn, speakKid: speakKid, stats: stats, solved: solved,
+    anyVoice: anyVoice, fx: fx, buzz: buzz, say: say, stopSay: stopSay, kidVoiceOn: kidVoiceOn, speakKid: speakKid, speakingNow: speakingNow, watchTalk: watchTalk, stats: stats, solved: solved,
     reduced: function () { return document.documentElement.classList.contains('rm'); },
     parentGate: parentGate, holdButton: holdButton, h: h,
     weekSeconds: weekSeconds, breakUntil: breakUntil, showBreak: showBreak, bedtimeLeft: bedtimeLeft
