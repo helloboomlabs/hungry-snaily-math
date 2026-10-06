@@ -11,6 +11,9 @@ const out = (...p) => join(root, 'www', 'vendor', ...p);
 
 const files = [
   [nm('@capacitor', 'core', 'dist', 'capacitor.js'), out('capacitor.js')],
+  // Friends: QR code maker (MIT) and QR code reader for browsers without BarcodeDetector (Apache-2.0).
+  [nm('qrcode-generator', 'qrcode.js'), out('qrcode.js')],
+  [nm('jsqr', 'dist', 'jsQR.js'), out('jsQR.js')],
   [nm('react', 'umd', 'react.production.min.js'), out('react.production.min.js')],
   [nm('react-dom', 'umd', 'react-dom.production.min.js'), out('react-dom.production.min.js')],
   ...[400, 500, 600, 700].map(w => [

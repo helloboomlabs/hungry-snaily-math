@@ -77,7 +77,7 @@
       .catch(function () { return 0; });
   }
   function resetProgress() {
-    var keep = [SETTINGS_KEY, 'snaily-voice2'];
+    var keep = [SETTINGS_KEY, 'snaily-voice2', 'snaily-cloud', 'snaily-gifts-got', 'snaily-gift-free'];
     var ks = [];
     for (var i = 0; i < localStorage.length; i++) ks.push(localStorage.key(i));
     ks.forEach(function (k) { if (isOurKey(k) && keep.indexOf(k) < 0) localStorage.removeItem(k); });

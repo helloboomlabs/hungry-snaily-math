@@ -5,10 +5,11 @@ import { join, extname } from 'node:path';
 
 const www = new URL('../www/', import.meta.url).pathname;
 // Only allowed network use: Snaily's kid voice (translate.google.com/translate_tts).
-const BAD = [/https?:\/\/(?!www\.w3\.org\/|translate\.google\.com\/translate_tts)/i, /fonts\.googleapis/i, /unpkg\.com/i];
+// Friends (opt-in, behind the parent gate): our own Supabase project and the web version's address.
+const BAD = [/https?:\/\/(?!www\.w3\.org\/|translate\.google\.com\/translate_tts|fvkcrsasrwkevrkcjcqd\.supabase\.co|helloboomlabs\.github\.io\/hungry-snaily-math)/i, /fonts\.googleapis/i, /unpkg\.com/i];
 // support.js contains CDN fallback constants that are never used because
 // React is preloaded from vendor/ (loadReactUmd returns early).
-const ALLOW = new Set(['support.js', 'vendor/capacitor.js', 'vendor/react.production.min.js', 'vendor/react-dom.production.min.js']);
+const ALLOW = new Set(['support.js', 'vendor/capacitor.js', 'vendor/react.production.min.js', 'vendor/react-dom.production.min.js', 'vendor/qrcode.js', 'vendor/jsQR.js']);
 let problems = 0;
 (function walk(dir) {
   for (const n of readdirSync(dir)) {

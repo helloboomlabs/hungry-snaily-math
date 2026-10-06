@@ -41,6 +41,8 @@ pset CFBundleDisplayName string "$DISPLAY_NAME"
 pset CFBundleShortVersionString string "$MARKETING_VERSION"
 pset CFBundleVersion string "$BUILD_NUMBER"
 pset LSApplicationCategoryType string "public.app-category.education"
+# Friends: scanning a friend's code (grown-up only, nothing is saved).
+pset NSCameraUsageDescription string "Snaily uses the camera only to scan a friend's code. No pictures or videos are saved."
 # Modern devices only (arm64); the template still says armv7.
 $PB -c "Delete :UIRequiredDeviceCapabilities" "$PLIST" >/dev/null 2>&1 || true
 $PB -c "Add :UIRequiredDeviceCapabilities array" "$PLIST"

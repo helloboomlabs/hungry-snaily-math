@@ -170,7 +170,7 @@
           kv('Night time', bu > Date.now() ? 'Snaily is asleep until ' + new Date(bu).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : N.bedtimeLeft() >= 0 ? 'in ' + fmtMins(N.bedtimeLeft()) : 'off')
         ])
       ]),
-      h('div', { 'class': 'p-note', text: 'All progress is stored only on this device. Nothing is sent anywhere.' })
+      h('div', { 'class': 'p-note', text: 'All progress is stored only on this device.' + (window.SnailyFriends && window.SnailyFriends.on() ? ' Friends: only the nickname, colour, friend list and presents are kept on our server.' : ' Nothing is sent anywhere.') })
     ]);
   }
 
@@ -211,19 +211,21 @@
       ]) : null,
       h('h3', { text: 'Privacy policy' }),
       P('Hungry Snaily Math is a math game for young children. We do not collect, store or share any personal information.'),
+      h('h3', { text: 'Friends (optional, off until a grown-up turns it on)' }),
+      P('Friends lets a child send game presents to friends that grown-ups add in person. Turning it on creates an anonymous account for the device: we never ask for an email, name, photo or location. Our server (Supabase, which stores the data for us) keeps only: a made-up nickname such as “Sunny Snail 12” and a snail colour, the friend list, and the presents and thank-you stickers sent in the last 60 days. There is no chat and no free text. The camera is used only while a grown-up scans a friend’s code, and nothing is saved. Grown-ups › Friends lets you remove or block friends, and “Turn off Friends” deletes the account and all its data from the server.'),
       h('h3', { text: 'What the app stores' }),
       P('Game progress (levels, medals, items, settings and play time) is saved only on this device. It is never sent to us or to anyone else. You can delete it at any time with Reset progress, or by deleting the app.'),
       h('h3', { text: "What we don't do" }),
       h('ul', null, [
-        LI('No accounts, sign-in, names or photos.'),
+        LI('No sign-in, names, emails or photos.'),
         LI('No advertising, and no ad or analytics tools.'),
-        LI('No location, contacts, camera or microphone access.'),
+        LI('No location, contacts or microphone access. The camera is used only for scanning a friend code (Friends).'),
         LI('No in-app purchases.'),
         LI("Snaily's voice: when the device is online, the sentence Snaily is about to say (only the game's own text, never anything the child types) is sent to Google's text-to-speech service to make her kid voice, so Google receives that text and the device's IP address. Turn Snaily's voice off in Settings to stop this. Offline, the device's built-in voice is used instead."),
         N.isNative ? null : LI('This web version is hosted on GitHub Pages, which may keep standard server logs (such as IP address) when the page loads.')
       ]),
       h('h3', { text: 'Children' }),
-      P('The app is designed for children aged 6–8 and follows the Apple Kids Category rules. Because we collect no personal information, there is no data for us to access, change or delete.'),
+      P('The app is designed for children aged 6–8 and follows the Apple Kids Category rules. Grown-ups can see, remove or delete all Friends data at any time in Grown-ups › Friends.'),
       h('h3', { text: 'Contact' }),
       P((window.SNAILY_CONFIG || {}).developer + ' · ' + (window.SNAILY_CONFIG || {}).supportEmail),
       h('p', { 'class': 'p-note', text: 'Hungry Snaily Math · version ' + ((window.SNAILY_CONFIG || {}).version || '1.0.0') + ' · Font: Fredoka (SIL Open Font License)' })
@@ -235,6 +237,7 @@
     panel.innerHTML = '';
     var body = h('div', { 'class': 'p-body' });
     var tabs = [['settings', 'Settings', settingsTab], ['progress', 'Progress', progressTab], ['about', 'Privacy', aboutTab]];
+    if (window.SnailyFriends) tabs.splice(2, 0, ['friends', 'Friends', window.SnailyFriends.parentTab]);
     var tabBtns = tabs.map(function (t) {
       var b = h('button', { 'class': 'p-tab', role: 'tab', 'aria-selected': String(t[0] === tab), text: t[1] });
       b.addEventListener('click', function () { show(t); });

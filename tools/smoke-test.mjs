@@ -130,6 +130,99 @@ await page.evaluate(s => Object.assign(__store, s), store);
 await page.evaluate(() => SnailyNative.restore());
 ok(await page.evaluate(() => JSON.parse(localStorage.getItem('snaily-sw-coll') || '{}').pond === 1), 'saved progress comes back');
 
+console.log('Friends & presents (fake server)');
+{
+  // A tiny in-memory stand-in for the Supabase backend (supabase/schema.sql).
+  const db = { users: 0, children: [], invites: [], friends: [], gifts: [] };
+  const BEE = { id: 'bee', family: 'other', nickname: 'Brave Bee 7', color: 'blue' };
+  db.children.push(BEE);
+  const pub = c => ({ id: c.id, nickname: c.nickname, color: c.color });
+  const byId = id => db.children.find(c => c.id === id);
+  const fr = me => db.friends.filter(f => f.a === me || f.b === me).map(f => byId(f.a === me ? f.b : f.a));
+  const RPC = {
+    make_invite: a => { const code = 'ABC' + (100 + db.invites.length); db.invites.push({ code, child: a.me, used_by: null }); return { code }; },
+    invite_status: a => { const i = db.invites.find(x => x.code === a.invite); return i.used_by ? { state: 'used', friend: pub(byId(i.used_by)) } : { state: 'waiting' }; },
+    redeem_invite: a => { const i = db.invites.find(x => x.code === a.invite && !x.used_by); if (!i) throw { message: 'That code did not work. Ask your friend for a new one.' }; i.used_by = a.me; db.friends.push({ a: a.me, b: i.child }); return pub(byId(i.child)); },
+    list_friends: a => fr(a.me).map(c => ({ ...pub(c), since: new Date().toISOString(), sent_today: 0 })),
+    inbox: a => ({ gifts: db.gifts.filter(g => g.to === a.me && !g.opened).map(g => ({ id: g.id, item: g.item, from: pub(byId(g.from)) })),
+      thanks: db.gifts.filter(g => g.from === a.me && g.thanks && !g.seen).map(g => ({ id: g.id, item: g.item, thanks: g.thanks, from: pub(byId(g.to)) })),
+      sent_today: db.gifts.filter(g => g.from === a.me).length }),
+    send_gift: a => { const n = db.gifts.filter(g => g.from === a.me).length; if (n >= 3) throw { message: 'You can send 3 gifts a day.' }; db.gifts.push({ id: 'g' + db.gifts.length, from: a.me, to: a.friend, item: a.gift }); return { left_today: 2 - n }; },
+    open_gift: a => { const g = db.gifts.find(x => x.id === a.gift && x.to === a.me); g.opened = true; if (a.say_thanks) g.thanks = a.say_thanks; return { id: g.id, item: g.item }; },
+    seen_thanks: a => { db.gifts.forEach(g => { if (a.ids.includes(g.id)) g.seen = true; }); return null; },
+    remove_friend: a => { db.friends = db.friends.filter(f => !((f.a === a.me && f.b === a.friend) || (f.b === a.me && f.a === a.friend))); return null; },
+    delete_family: () => { db.children = db.children.filter(c => c.family === 'other'); db.deleted = true; return null; }
+  };
+  const ctx2 = await browser.newContext({ viewport: { width: 932, height: 430 } });
+  const fp = await ctx2.newPage();
+  const ferr = [];
+  fp.on('pageerror', e => ferr.push(e.message));
+  await ctx2.route('https://fvkcrsasrwkevrkcjcqd.supabase.co/**', async route => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET,POST,OPTIONS' } });
+    const u = new URL(route.request().url()), body = JSON.parse(route.request().postData() || '{}');
+    const reply = (st, b) => route.fulfill({ status: st, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: b == null ? '' : JSON.stringify(b) });
+    if (u.pathname === '/auth/v1/signup') { db.users++; return reply(200, { access_token: 't', refresh_token: 'r', expires_in: 3600, user: { id: 'fam' + db.users } }); }
+    if (u.pathname === '/auth/v1/token') return reply(200, { access_token: 't2', refresh_token: 'r2', expires_in: 3600 });
+    if (u.pathname === '/rest/v1/children') { const c = { id: 'kid' + db.users, ...body }; db.children.push(c); return reply(201, [c]); }
+    const fn = u.pathname.replace('/rest/v1/rpc/', '');
+    try { return reply(200, RPC[fn](body)); } catch (e) { return reply(400, { message: e.message || String(e) }); }
+  });
+  const passGate = async () => {
+    await fp.waitForSelector('.sn-gate-q');
+    const q = await fp.textContent('.sn-gate-q'); const [, x, y] = q.match(/(\d+) × (\d+)/);
+    for (const d of String(x * y)) await fp.click(`.sn-key[aria-label="${d}"]`);
+    await sleep(400);
+  };
+  const title = () => fp.textContent('.fr-head h2').catch(() => '');
+  await fp.goto(base + 'index.html'); await sleep(500);
+  await fp.evaluate(() => localStorage.setItem('snaily-sw-coll', JSON.stringify({ pond: 2 })));
+  ok(!!(await fp.$('.fr-open')) && !(await fp.isVisible('.fr-badge')), 'Friends button on the home screen, no badge yet');
+  await fp.click('.fr-open'); await sleep(300);
+  ok(/turn on Friends/.test(await fp.textContent('.fr-body')), 'Friends is off until a grown-up turns it on');
+  await fp.click('text=Grown-ups: turn on Friends'); await passGate();
+  ok(/Turn on Friends/.test(await title()) && /anonymous account/.test(await fp.textContent('.fr-info')), 'grown-up sees what is collected');
+  await fp.click('.fr-info .fr-big'); await sleep(600);
+  const mine = await fp.evaluate(() => JSON.parse(localStorage.getItem('snaily-cloud')));
+  ok(/My friends/.test(await title()) && mine && /^[A-Z][a-z]+ [A-Z][a-z]+ \d+$/.test(mine.child.nickname), 'account made with a made-up nickname: ' + (mine && mine.child.nickname));
+  await fp.click('.fr-add'); await passGate();
+  await fp.click('text=Show my code'); await sleep(600);
+  const code = (await fp.textContent('.fr-code')).replace(/\s/g, '');
+  ok(/^ABC\d{3}$/.test(code), 'friend code is shown: ' + code);
+  ok(!!(await fp.$('.fr-qr svg')) || /Type this code/.test(await fp.textContent('.fr-qr')), 'QR code (or typing hint) is shown');
+  RPC.redeem_invite({ me: 'bee', invite: code });
+  await sleep(3200);
+  ok(/New friend/.test(await title()) && /Brave Bee 7/.test(await fp.textContent('.fr-body')), 'when the friend scans it, both become friends');
+  await fp.click('text=Yay!'); await sleep(500);
+  ok((await fp.$$('.fr-friend:not(.fr-add)')).length === 1, 'friend shows in the list');
+  await fp.click('.fr-friend:not(.fr-add) .sn-btn'); await sleep(300);
+  ok((await fp.$$('.fr-tile')).length === 2, 'present choices: the free surprise and shells');
+  await fp.click('.fr-tile:not(.fr-free)'); await sleep(200);
+  await fp.click('text=Wrap it and send!'); await sleep(500);
+  ok(db.gifts.length === 1 && db.gifts[0].item === 'pond' && db.gifts[0].to === 'bee', 'present is sent to the friend');
+  ok(await fp.evaluate(() => JSON.parse(localStorage.getItem('snaily-sw-coll')).pond === 1), 'the shell leaves the Story Garden');
+  db.gifts.push({ id: 'gb', from: 'bee', to: mine.child.id, item: 'clock' });
+  db.gifts[0].thanks = 'hug';
+  await fp.click('.fr-head .fr-x:not(.fr-back)'); await sleep(200);
+  await fp.evaluate(() => SnailyFriends.refresh()); await sleep(300);
+  ok((await fp.textContent('.fr-badge')) === '2' && await fp.isVisible('.fr-badge'), 'badge shows a present and a thank-you');
+  await fp.click('.fr-open'); await sleep(600);
+  ok(/hug/.test(await fp.textContent('.fr-say')) && db.gifts[0].seen, 'thank-you sticker is shown, then cleared');
+  await fp.click('.fr-present'); await sleep(200);
+  await fp.click('.fr-bigbox'); await sleep(500);
+  ok(await fp.evaluate(() => JSON.parse(localStorage.getItem('snaily-sw-coll')).clock === 1), 'opened present goes into the Story Garden');
+  await fp.click('.fr-sticker[aria-label="a big heart"]'); await sleep(400);
+  ok(db.gifts[1].opened && db.gifts[1].thanks === 'heart', 'thank-you sticker is sent back');
+  await fp.click('.fr-head .fr-x:not(.fr-back)'); await sleep(200);
+  await fp.evaluate(() => window.__openParent('friends')); await sleep(500);
+  ok(/Brave Bee 7/.test(await fp.textContent('.p-body')), 'Grown-ups › Friends lists the friend');
+  await fp.click('.p-body .sn-btn.danger:has-text("Block")'); await sleep(400);
+  ok(db.friends.length === 0 && /No friends yet/.test(await fp.textContent('.p-body')), 'grown-up can remove/block a friend');
+  await fp.click('button:has-text("Turn off Friends")'); await fp.click('button:has-text("Tap again to delete")'); await sleep(400);
+  ok(db.deleted && !(await fp.evaluate(() => localStorage.getItem('snaily-cloud'))), 'Turn off Friends deletes the account');
+  ok(ferr.length === 0, 'no JavaScript errors in Friends' + (ferr.length ? ': ' + ferr.join(' | ') : ''));
+  await ctx2.close();
+}
+
 ok(errors.length === 0, 'still no JavaScript errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
 await browser.close(); server.close();
 console.log(failures ? `\n${failures} check(s) FAILED` : '\nAll checks passed');

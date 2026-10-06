@@ -4,7 +4,8 @@
 const CACHE = 'snaily-CACHE_VERSION';
 const FILES = [
   './', 'index.html', 'garden.html', 'story.html', 'support.js', 'manifest.webmanifest',
-  'app/app.css', 'app/fonts.css', 'app/home.css', 'app/home.js', 'app/native.js', 'app/config.js',
+  'app/app.css', 'app/fonts.css', 'app/home.css', 'app/home.js', 'app/native.js', 'app/config.js', 'app/friends.js',
+  'vendor/qrcode.js', 'vendor/jsQR.js',
   'vendor/capacitor.js', 'vendor/react.production.min.js', 'vendor/react-dom.production.min.js',
   'vendor/fonts/fredoka-latin-400-normal.woff2', 'vendor/fonts/fredoka-latin-500-normal.woff2',
   'vendor/fonts/fredoka-latin-600-normal.woff2', 'vendor/fonts/fredoka-latin-700-normal.woff2',
